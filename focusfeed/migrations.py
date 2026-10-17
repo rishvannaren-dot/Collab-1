@@ -36,6 +36,21 @@ MIGRATIONS = [
             " PRIMARY KEY (user_id, subject_key))",
         ],
     ),
+    (
+        4,  # topics a student marked as studied, how sure they felt, and revision dates
+        [
+            "CREATE TABLE topic_progress ("
+            " user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,"
+            " topic_key TEXT NOT NULL,"
+            " confidence INTEGER NOT NULL CHECK (confidence IN (1, 2, 3)),"
+            " first_studied_on TEXT NOT NULL,"
+            " last_studied_on TEXT NOT NULL,"
+            " box INTEGER NOT NULL DEFAULT 0 CHECK (box BETWEEN 0 AND 5),"
+            " due_on TEXT,"
+            " PRIMARY KEY (user_id, topic_key))",
+            "CREATE INDEX topic_progress_due ON topic_progress (user_id, due_on)",
+        ],
+    ),
 ]
 
 

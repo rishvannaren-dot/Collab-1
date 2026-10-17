@@ -1,0 +1,40 @@
+{% import "_icons.html" as icons %}
+{#- "How well do you know it?" buttons, or the saved answer with Undo and Change.
+    Plain forms, so it works without JavaScript; `next` brings the page back to the topic. -#}
+{% macro confidence_buttons(key, topic, next) -%}
+<form method="post" action="{{ url_for('study.mark') }}" class="mark">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="topic_key" value="{{ key }}">
+  <input type="hidden" name="next" value="{{ next }}">
+  <p class="mark-q">How well do you know it?</p>
+  <div class="mark-buttons" role="group" aria-label="How well do you know {{ topic }}?">
+    <button type="submit" name="confidence" value="3" class="mark-btn mark-3">Got it</button>
+    <button type="submit" name="confidence" value="2" class="mark-btn mark-2">Shaky</button>
+    <button type="submit" name="confidence" value="1" class="mark-btn mark-1">Lost me</button>
+  </div>
+</form>
+{%- endmacro %}
+
+{% macro mark_form(key, topic, row, next, today) -%}
+{% if row %}
+  {% set label = {3: 'Got it', 2: 'Shaky', 1: 'Lost me'}[row.confidence] %}
+  <div class="marked">
+    <p class="marked-state">
+      {{ icons.icon('check-circle', 16) }}
+      <span>Studied {{ 'today' if row.last_studied_on == today.isoformat() else 'on ' ~ (row.last_studied_on | date) }} · <span class="conf conf-{{ row.confidence }}">{{ label }}</span></span>
+    </p>
+    <form method="post" action="{{ url_for('study.unmark') }}" class="inline-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="topic_key" value="{{ key }}">
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" class="link-btn">Undo</button>
+    </form>
+    <details class="change">
+      <summary>Change</summary>
+      {{ confidence_buttons(key, topic, next) }}
+    </details>
+  </div>
+{% else %}
+  {{ confidence_buttons(key, topic, next) }}
+{% endif %}
+{%- endmacro %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Progress{% endblock %}
+{% block content %}
+  <header class="greeting">
+    <h1>Progress</h1>
+    <p class="muted">Topics you've marked as studied, out of the chapters in Focus Feed for Class {{ prefs.grade }}{% if goal_label %} · {{ goal_label }}{% endif %}.</p>
+  </header>
+
+  {% if not subjects %}
+    <div class="empty">
+      <span class="empty-art">{{ icons.icon('chart', 40) }}</span>
+      <h2>No study plan yet</h2>
+      <p class="muted">Study cards and progress cover JEE, NEET and Board exams for Classes 11 and 12 for now.</p>
+      <a class="btn btn-primary" href="{{ url_for('onboarding.onboarding') }}">Change preferences</a>
+    </div>
+  {% else %}
+    {% if not any_studied %}
+      <p class="notice">Mark a topic as studied ("Got it", "Shaky" or "Lost me") to see your progress here.</p>
+    {% endif %}
+
+    {% if needs_work %}
+      <section class="vsection" aria-labelledby="needs-work">
+        <h2 class="overline" id="needs-work">Needs work</h2>
+        <ul class="needs-list">
+          {% for item in needs_work %}
+            <li>
+              <span class="dot dot-{{ item.confidence }}" aria-hidden="true"></span>
+              <a class="link" href="{{ url_for('topics.chapter', subject_key=item.subject_key, slug=item.chapter_slug) }}#{{ item.anchor }}">{{ item.topic }}</a>
+              <span class="muted small">{{ item.subject }} · {{ labels[item.confidence] }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+
+    {% for subject in subjects %}
+      <section class="vsection progress-subject" id="{{ subject.key }}">
+        <div class="section-head">
+          <h2>{{ subject.label }}</h2>
+          <span class="muted">{{ subject.done }} of {{ subject.total }} topics</span>
+        </div>
+        <progress class="bar" value="{{ subject.done }}" max="{{ subject.total }}" aria-label="{{ subject.label }}: {{ subject.done }} of {{ subject.total }} topics studied"></progress>
+        <ul class="chapter-progress">
+          {% for chapter in subject.chapters %}
+            <li>
+              <a class="title-link" href="{{ url_for('topics.chapter', subject_key=subject.key, slug=chapter.slug) }}">{{ chapter.name }}</a>
+              <span class="dots">
+                {% for topic in chapter.topics %}
+                  <span class="dot dot-{{ topic.confidence or 0 }}" title="{{ topic.name }}: {{ labels[topic.confidence] if topic.confidence else 'not studied' }}"><span class="sr-only">{{ topic.name }}: {{ labels[topic.confidence] if topic.confidence else 'not studied' }}</span></span>
+                {% endfor %}
+              </span>
+              <span class="muted small">{{ chapter.done }}/{{ chapter.total }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endfor %}
+    <p class="muted small">Dots: <span class="dot dot-3" aria-hidden="true"></span> Got it · <span class="dot dot-2" aria-hidden="true"></span> Shaky · <span class="dot dot-1" aria-hidden="true"></span> Lost me · <span class="dot dot-0" aria-hidden="true"></span> not studied yet</p>
+  {% endif %}
+{% endblock %}

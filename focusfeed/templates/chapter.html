@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_study.html" import mark_form %}
 {% block title %}{{ chapter.name }}{% endblock %}
 {% block content %}
   <header class="greeting page-head">
@@ -21,8 +22,9 @@
 
   <div class="section-head">
     <h2 class="overline">Topics in this chapter</h2>
-    <span class="muted">{{ items | length }} topics</span>
+    <span class="muted">{{ done }} of {{ items | length }} topics studied</span>
   </div>
+  <progress class="bar" value="{{ done }}" max="{{ items | length }}" aria-label="{{ done }} of {{ items | length }} topics studied"></progress>
   <div class="topic-list">
     {% for item in items %}
       <article class="card" id="{{ item.anchor }}" style="--i: {{ loop.index0 }}">
@@ -35,6 +37,7 @@
         {% else %}
           <p class="muted small">No summary yet. It will appear once Wikipedia can be reached.</p>
         {% endif %}
+        {{ mark_form(item.key, item.name, item.studied, request.path ~ '#' ~ item.anchor, today) }}
         <p class="card-links">
           {% if item.info %}<a class="link" href="{{ item.info.url }}" target="_blank" rel="noopener noreferrer">Read on Wikipedia</a>{% endif %}
           <a class="link" href="{{ item.video_link }}" target="_blank" rel="noopener noreferrer">Videos on YouTube</a>

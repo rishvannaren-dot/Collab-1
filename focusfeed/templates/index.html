@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_study.html" import mark_form %}
 {% block title %}Today{% endblock %}
 {% macro summary(info) -%}
   {% if info %}
@@ -9,9 +10,10 @@
 <ol class="week" aria-label="This week's plan">
   {% for slot in card.plan %}
     {% set label = slot.topic if slot.kind == 'learn' else {'review': 'Chapter review', 'practice': 'Practice', 'rest': 'Rest'}[slot.kind] %}
-    <li class="week-step week-{{ slot.kind }}{% if slot.day < card.day %} is-past{% endif %}"{% if slot.day == card.day %} aria-current="step"{% endif %} title="Day {{ slot.day }}: {{ label }}">
-      <span aria-hidden="true">{% if slot.kind == 'learn' %}{{ slot.day }}{% elif slot.kind == 'review' %}R{% elif slot.kind == 'practice' %}P{% else %}&middot;{% endif %}</span>
-      <span class="sr-only">Day {{ slot.day }}: {{ label }}{% if slot.day == card.day %} (today){% endif %}</span>
+    <li class="week-step week-{{ slot.kind }}{% if slot.day < card.day %} is-past{% endif %}{% if slot.kind == 'learn' and slot.topic in card.studied_topics %} is-done{% endif %}"{% if slot.day == card.day %} aria-current="step"{% endif %} title="Day {{ slot.day }}: {{ label }}">
+      {% set done = slot.kind == 'learn' and slot.topic in card.studied_topics %}
+      <span aria-hidden="true">{% if done %}&#10003;{% elif slot.kind == 'learn' %}{{ slot.day }}{% elif slot.kind == 'review' %}R{% elif slot.kind == 'practice' %}P{% else %}&middot;{% endif %}</span>
+      <span class="sr-only">Day {{ slot.day }}: {{ label }}{% if done %} (studied){% endif %}{% if slot.day == card.day %} (today){% endif %}</span>
     </li>
   {% endfor %}
 </ol>
@@ -39,7 +41,7 @@
     <div class="cards">
       {% for card in cards %}
         {% set chapter_url = url_for('topics.chapter', subject_key=card.subject_key, slug=card.slug) %}
-        <article class="card" id="card-{{ card.subject_key }}" style="--i: {{ loop.index0 }}">
+        <article class="card{% if card.studied and card.studied.last_studied_on == today.isoformat() %} is-done{% endif %}" id="card-{{ card.subject_key }}" style="--i: {{ loop.index0 }}">
           <div class="card-head">
             <span class="tile">{{ icons.subject_icon(card.subject, 22) }}</span>
             <div class="card-title">
@@ -61,9 +63,10 @@
             {{ summary(card.info) }}
             <ul class="chips" aria-label="Topics this week">
               {% for t in card.topics %}
-                <li><a class="chip{% if t == card.topic %} chip-on{% endif %}" href="{{ chapter_url }}#{{ t | slug }}">{{ t }}</a></li>
+                <li><a class="chip{% if t == card.topic %} chip-on{% endif %}{% if t in card.studied_topics %} chip-done{% endif %}" href="{{ chapter_url }}#{{ t | slug }}">{{ t }}{% if t in card.studied_topics %}<span class="sr-only"> (studied)</span>{% endif %}</a></li>
               {% endfor %}
             </ul>
+            {{ mark_form(card.topic_key, card.topic, card.studied, '/#card-' ~ card.subject_key, today) }}
           {% elif card.kind == 'review' %}
             <p class="summary">Close the book. Say or write what you remember about each topic, then check.</p>
             <ul class="review-list">
@@ -74,13 +77,31 @@
           {% elif card.kind == 'practice' %}
             <p class="summary">Solve the exercises at the end of this chapter in your textbook. Stuck? Open the topic on the <a class="link" href="{{ chapter_url }}">chapter page</a>.</p>
           {% else %}
-            <p class="summary">Nothing new today. Rest, or catch up on anything you missed this week.</p>
+            {% if card.catch_up %}
+              <p class="summary">Nothing new today. If you want to catch up, these are this week's topics you haven't marked yet:</p>
+              <ul class="review-list">
+                {% for t in card.catch_up %}
+                  <li><a class="link" href="{{ chapter_url }}#{{ t | slug }}">{{ t }}</a></li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="summary">You covered every topic this week. Rest.</p>
+            {% endif %}
           {% endif %}
           {% if card.revise %}<p class="muted small">Revise: {{ card.revise }}</p>{% endif %}
           <a class="row-link" href="{{ url_for('videos.index') }}#{{ card.chapter | slug }}">Watch videos {{ icons.icon('chevron', 16) }}</a>
         </article>
       {% endfor %}
     </div>
+    {% if finished %}
+      <section class="finish" aria-label="Done for today">
+        <span class="finish-art">{{ icons.icon('check-circle', 28) }}</span>
+        <div>
+          <h2>That's everything for today.</h2>
+          <p class="muted">See you tomorrow. <a class="link" href="{{ url_for('study.progress') }}">See your progress</a></p>
+        </div>
+      </section>
+    {% endif %}
   {% else %}
     <div class="empty">
       <span class="empty-art">{{ icons.icon('sprout', 40) }}</span>

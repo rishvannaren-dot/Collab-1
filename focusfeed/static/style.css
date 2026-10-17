@@ -16,6 +16,9 @@
   --success-bg: #e6f4ea;
   --danger: #b42318;
   --danger-ink: #ffffff;
+  --ok: #15803d;
+  --warn: #b45309;
+  --bad: #b42318;
   --notice-bg: #eef2f7;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.08);
@@ -40,6 +43,9 @@
   --success-bg: #17301f;
   --danger: #ff8a80;
   --danger-ink: #1a0b0a;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --bad: #f87171;
     --notice-bg: #1b2230;
     --shadow: none;
     --shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.4);
@@ -62,6 +68,9 @@
   --success-bg: #17301f;
   --danger: #ff8a80;
   --danger-ink: #1a0b0a;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --bad: #f87171;
   --notice-bg: #1b2230;
   --shadow: none;
   --shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.4);
@@ -1170,6 +1179,239 @@ a.chip:hover {
   flex-wrap: wrap;
   gap: 4px 20px;
   font-size: 14px;
+}
+
+/* Study record */
+
+.mark-q {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.mark-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mark-btn {
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.mark-btn:hover {
+  background: var(--subtle);
+}
+
+.mark-3:hover {
+  border-color: var(--ok);
+}
+
+.mark-2:hover {
+  border-color: var(--warn);
+}
+
+.mark-1:hover {
+  border-color: var(--bad);
+}
+
+.marked {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  font-size: 14px;
+}
+
+.marked-state {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-2);
+}
+
+.marked-state .icon {
+  color: var(--ok);
+}
+
+.conf {
+  font-weight: 700;
+}
+
+.conf-3 {
+  color: var(--ok);
+}
+
+.conf-2 {
+  color: var(--warn);
+}
+
+.conf-1 {
+  color: var(--bad);
+}
+
+.link-btn {
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+details.change {
+  flex-basis: 100%;
+}
+
+details > summary {
+  width: fit-content;
+  color: var(--accent-text);
+  cursor: pointer;
+}
+
+details > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+details.change .mark {
+  margin-top: 8px;
+}
+
+.card.is-done {
+  border-color: color-mix(in srgb, var(--ok) 45%, var(--border));
+}
+
+.chip-done::before,
+.week-step.is-done {
+  color: var(--ok);
+}
+
+.chip-done::before {
+  content: "\2713  ";
+  font-weight: 700;
+}
+
+.finish {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.finish h2 {
+  font-size: 22px;
+}
+
+.finish-art {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--success-bg);
+  color: var(--ok);
+}
+
+progress.bar {
+  display: block;
+  width: 100%;
+  height: 8px;
+  margin: 0 0 16px;
+  border: 0;
+  border-radius: 100px;
+  background: var(--subtle);
+  overflow: hidden;
+  appearance: none;
+}
+
+progress.bar::-webkit-progress-bar {
+  background: var(--subtle);
+}
+
+progress.bar::-webkit-progress-value {
+  background: var(--accent);
+  border-radius: 100px;
+}
+
+progress.bar::-moz-progress-bar {
+  background: var(--accent);
+  border-radius: 100px;
+}
+
+.progress-subject h2 {
+  font-size: 22px;
+}
+
+.chapter-progress,
+.needs-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chapter-progress li,
+.needs-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.chapter-progress .title-link {
+  flex: 1 1 200px;
+}
+
+.dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.dot-0 {
+  border: 1.5px solid var(--muted);
+}
+
+.dot-1 {
+  background: var(--bad);
+}
+
+.dot-2 {
+  background: var(--warn);
+}
+
+.dot-3 {
+  background: var(--ok);
 }
 
 /* Videos */

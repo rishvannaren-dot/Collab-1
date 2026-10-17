@@ -2,7 +2,7 @@ from flask import Blueprint, abort, current_app, g, redirect, render_template, u
 
 from ..db import get_db
 from ..services import cards as cards_service
-from ..services import explore, plan, preferences, topic_info
+from ..services import explore, plan, preferences, progress, topic_info
 from ..services import videos as videos_service
 from . import helpers
 from .auth import login_required
@@ -99,10 +99,13 @@ def chapter(subject_key, slug):
     today_topic = this_week["topic"] if this_week else None
 
     titles = topic_info.load_wiki_titles()
+    studied = progress.progress_for(db, g.user["id"])
     items = [
         {
             "name": topic,
             "anchor": cards_service.slugify(topic),
+            "key": progress.topic_key(subject_key, chapter["name"], topic),
+            "studied": studied.get(progress.topic_key(subject_key, chapter["name"], topic)),
             "today": topic == today_topic,
             "search": topic_info.syllabus_search(topic, subject["label"], titles),
             "video_link": videos_service.search_link(
@@ -122,4 +125,6 @@ def chapter(subject_key, slug):
         items=items,
         this_week=this_week,
         can_start=can_start,
+        done=sum(1 for item in items if item["studied"]),
+        today=helpers.today(),
     )

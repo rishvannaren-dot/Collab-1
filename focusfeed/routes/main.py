@@ -2,7 +2,7 @@ from flask import Blueprint, g, redirect, render_template, url_for
 
 from ..db import get_db
 from ..services import cards as cards_service
-from ..services import account, explore, plan, preferences, recovery, topic_info
+from ..services import account, explore, plan, preferences, progress, recovery, topic_info
 from . import helpers
 from .auth import login_required
 from .topics import attach_info
@@ -37,6 +37,16 @@ def index():
     cards = plan.todays_cards(db, g.user["id"], prefs, cards_service.load_syllabus(), today)
     picks = explore.todays_picks(prefs["interests"], explore.load_interest_topics(), today)
 
+    studied = progress.progress_for(db, g.user["id"])
+    for card in cards:
+        keys = {t: progress.topic_key(card["subject_key"], card["chapter"], t) for t in card["topics"]}
+        card["studied_topics"] = {t for t, key in keys.items() if key in studied}
+        if card["topic"]:
+            card["topic_key"] = keys[card["topic"]]
+            card["studied"] = studied.get(card["topic_key"])
+        if card["kind"] == "rest":
+            card["catch_up"] = [t for t in card["topics"] if t not in card["studied_topics"]]
+
     titles = topic_info.load_wiki_titles()
     learn_cards = [card for card in cards if card["topic"]]
     for card in learn_cards:
@@ -54,6 +64,7 @@ def index():
         greeting=greeting_for(helpers.now().hour),
         today=today,
         has_recovery_key=recovery.key_created_at(db, g.user["id"]) is not None,
+        finished=progress.day_finished(cards, studied, today),
     )
 
 

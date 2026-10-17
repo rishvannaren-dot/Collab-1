@@ -30,6 +30,8 @@ Run the tests with `pytest`.
   - Each followed interest gets one thing to explore per day, from `focusfeed/data/interests.json`.
   - Every card shows a one- or two-line explanation from Wikipedia (see below).
 - **Chapter pages** (`/study/<subject>/<chapter>`): every topic in a chapter with its explanation. Card titles and topic chips link here.
+- **Study record**: every topic on Today and on chapter pages asks "How well do you know it?" (Got it / Shaky / Lost me). Chapter pages show "3 of 5 topics studied", and when every topic for today is marked, Today says so and suggests nothing more. Only dates are stored, never times.
+- **Progress** (`/progress`): per subject and chapter, how many topics are marked, with a "Needs work" list of Shaky and Lost-me topics. There are no streaks, points or badges, on purpose. If a topic is renamed in `syllabus.json`, its old marks no longer count; a test lists every topic key so renames are noticed.
 - **Topic pages** (`/topics/<interest>`): everything to explore for one interest, plus videos. The followed topics in the sidebar link here.
 - **Explanations**: looked up on Wikipedia (Google's web search API is closed to new projects; most of Google's topic summaries come from Wikipedia anyway). No key is needed.
   - `focusfeed/data/wiki_titles.json` maps syllabus topics to the right article when the name alone would find the wrong one (for example "Transformers" to "Transformer"). Other topics are searched by name.
