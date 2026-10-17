@@ -1,7 +1,7 @@
 from flask import Blueprint, abort, flash, g, redirect, render_template, request, url_for
 
 from ..db import get_db
-from ..services import cards, plan, preferences, progress
+from ..services import cards, plan, preferences, progress, revision
 from . import helpers
 from .auth import login_required
 
@@ -34,7 +34,10 @@ def mark():
     confidence = request.form.get("confidence", "")
     if confidence not in ("1", "2", "3") or not progress.valid_key(cards.load_syllabus(), key):
         abort(400)
-    progress.mark(get_db(), g.user["id"], key, int(confidence), helpers.today())
+    today = helpers.today()
+    # Marking (or re-marking) starts the topic's revision schedule again.
+    schedule = revision.schedule_first(int(confidence), today)
+    progress.mark(get_db(), g.user["id"], key, int(confidence), today, schedule)
     return redirect(helpers.safe_next(request.form.get("next"), url_for("main.index")))
 
 
@@ -46,6 +49,19 @@ def unmark():
         abort(400)
     progress.unmark(get_db(), g.user["id"], key)
     return redirect(helpers.safe_next(request.form.get("next"), url_for("main.index")))
+
+
+@bp.route("/study/review", methods=("POST",))
+@login_required
+def review():
+    """Answer a revision card: remembered ("1") or not yet ("0")."""
+    remembered = request.form.get("remembered")
+    if remembered not in ("0", "1"):
+        abort(400)
+    key = request.form.get("topic_key", "")
+    if not revision.record_review(get_db(), g.user["id"], key, remembered == "1", helpers.today()):
+        abort(404)  # only topics this student has studied
+    return redirect(helpers.safe_next(request.form.get("next"), url_for("main.index") + "#revise"))
 
 
 @bp.route("/progress", endpoint="progress")

@@ -71,7 +71,7 @@
             <p class="summary">Close the book. Say or write what you remember about each topic, then check.</p>
             <ul class="review-list">
               {% for t in card.topics %}
-                <li><a class="link" href="{{ chapter_url }}#{{ t | slug }}">{{ t }}</a></li>
+                <li><a class="link" href="{{ chapter_url }}#{{ t | slug }}">{{ t }}</a> <span class="muted small">{{ card.prompts[t] }}</span></li>
               {% endfor %}
             </ul>
           {% elif card.kind == 'practice' %}
@@ -88,7 +88,6 @@
               <p class="summary">You covered every topic this week. Rest.</p>
             {% endif %}
           {% endif %}
-          {% if card.revise %}<p class="muted small">Revise: {{ card.revise }}</p>{% endif %}
           <a class="row-link" href="{{ url_for('videos.index') }}#{{ card.chapter | slug }}">Watch videos {{ icons.icon('chevron', 16) }}</a>
         </article>
       {% endfor %}
@@ -115,6 +114,39 @@
         <a class="btn btn-ghost" href="{{ url_for('onboarding.onboarding') }}">Change preferences</a>
       </div>
     </div>
+  {% endif %}
+
+  {% if revise %}
+    <section id="revise" class="section-gap" aria-labelledby="revise-heading">
+      <div class="section-head">
+        <h2 class="overline" id="revise-heading">Revise today</h2>
+      </div>
+      <div class="cards">
+        {% for item in revise %}
+          <article class="card">
+            <div>
+              <h3>{{ item.topic }}</h3>
+              <p class="muted"><a class="title-link" href="{{ url_for('topics.chapter', subject_key=item.subject_key, slug=item.chapter_slug) }}#{{ item.anchor }}">{{ item.subject }} · {{ item.chapter }}</a></p>
+            </div>
+            <p class="summary">{{ item.prompt }}</p>
+            <details>
+              <summary>Show summary</summary>
+              <p class="summary">{{ item.info.summary if item.info else 'No saved summary. Check the chapter page.' }}</p>
+            </details>
+            <form method="post" action="{{ url_for('study.review') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="topic_key" value="{{ item.key }}">
+              <input type="hidden" name="next" value="/#revise">
+              <div class="mark-buttons" role="group" aria-label="Did you remember {{ item.topic }}?">
+                <button type="submit" name="remembered" value="1" class="mark-btn mark-3">I remembered</button>
+                <button type="submit" name="remembered" value="0" class="mark-btn mark-1">Not yet</button>
+              </div>
+            </form>
+          </article>
+        {% endfor %}
+      </div>
+      {% if revise_more %}<p class="muted small">More come back on later days.</p>{% endif %}
+    </section>
   {% endif %}
 
   {% if picks %}

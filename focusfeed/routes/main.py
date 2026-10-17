@@ -2,7 +2,7 @@ from flask import Blueprint, g, redirect, render_template, url_for
 
 from ..db import get_db
 from ..services import cards as cards_service
-from ..services import account, explore, plan, preferences, progress, recovery, topic_info
+from ..services import account, explore, plan, preferences, progress, recovery, revision, topic_info
 from . import helpers
 from .auth import login_required
 from .topics import attach_info
@@ -46,6 +46,23 @@ def index():
             card["studied"] = studied.get(card["topic_key"])
         if card["kind"] == "rest":
             card["catch_up"] = [t for t in card["topics"] if t not in card["studied_topics"]]
+        if card["kind"] == "review":
+            card["prompts"] = {t: revision.recall_prompt(card["subject_key"], t, today) for t in card["topics"]}
+
+    # Revise today: the student's own studied topics that are due, in their goal's subjects.
+    syllabus = cards_service.load_syllabus()
+    index = progress.topic_index(syllabus)
+    subject_keys = cards_service.SUBJECTS_BY_GOAL.get(prefs["goal"], [])
+    allowed = {key for key, info in index.items() if info["subject_key"] in subject_keys}
+    due, revise_more = revision.due(db, g.user["id"], today, allowed)
+    revise = [
+        {
+            **index[row["topic_key"]],
+            "key": row["topic_key"],
+            "prompt": revision.recall_prompt(index[row["topic_key"]]["subject_key"], index[row["topic_key"]]["topic"], today),
+        }
+        for row in due
+    ]
 
     titles = topic_info.load_wiki_titles()
     learn_cards = [card for card in cards if card["topic"]]
@@ -54,6 +71,13 @@ def index():
     for pick in picks:
         pick["search"] = topic_info.interest_search(pick["article"], pick["label"])
     attach_info(learn_cards + picks)
+    # Revision summaries come from the cache only, so they never slow Today down
+    # or use up the live lookups.
+    for item in revise:
+        item["search"] = topic_info.syllabus_search(item["topic"], item["subject"], titles)
+    cached = topic_info.lookup_many(db, [item["search"] for item in revise], live=0)
+    for item in revise:
+        item["info"] = cached.get(item["search"]["key"])
 
     return render_template(
         "index.html",
@@ -65,6 +89,8 @@ def index():
         today=today,
         has_recovery_key=recovery.key_created_at(db, g.user["id"]) is not None,
         finished=progress.day_finished(cards, studied, today),
+        revise=revise,
+        revise_more=revise_more,
     )
 
 

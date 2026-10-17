@@ -21,7 +21,7 @@
   <div class="marked">
     <p class="marked-state">
       {{ icons.icon('check-circle', 16) }}
-      <span>Studied {{ 'today' if row.last_studied_on == today.isoformat() else 'on ' ~ (row.last_studied_on | date) }} · <span class="conf conf-{{ row.confidence }}">{{ label }}</span></span>
+      <span>Studied {{ 'today' if row.last_studied_on == today.isoformat() else 'on ' ~ (row.last_studied_on | date) }} · <span class="conf conf-{{ row.confidence }}">{{ label }}</span>{% if row.due_on %} · <span class="muted">next review {{ row.due_on | date }}</span>{% endif %}</span>
     </p>
     <form method="post" action="{{ url_for('study.unmark') }}" class="inline-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
