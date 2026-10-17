@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_videos.html" import video_list %}
 {% block title %}Videos{% endblock %}
 {% block content %}
   <header class="greeting">
@@ -14,18 +15,7 @@
     <section class="vsection" id="{{ section.tag | replace(' ', '-') }}">
       <h2 class="overline">{{ section.title }}</h2>
       {% if section.videos %}
-        <div class="videos">
-          {% for v in section.videos %}
-            <a class="video" href="https://www.youtube.com/watch?v={{ v.id }}" target="_blank" rel="noopener noreferrer">
-              <img src="https://i.ytimg.com/vi/{{ v.id }}/mqdefault.jpg" alt="" loading="lazy">
-              <span class="video-text">
-                <strong>{{ v.title }}</strong>
-                <span class="muted small">{{ v.channel }}{% if v.seconds %} · {{ format_duration(v.seconds) }}{% endif %}</span>
-              </span>
-              {{ icons.icon('chevron', 16) }}
-            </a>
-          {% endfor %}
-        </div>
+        {{ video_list(section.videos, format_duration) }}
       {% else %}
         <p class="muted">No saved videos for this yet.</p>
       {% endif %}

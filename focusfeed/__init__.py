@@ -5,8 +5,8 @@ from flask import Flask, flash, g, redirect, render_template, request, url_for
 from flask_wtf.csrf import CSRFError, CSRFProtect
 
 from . import db
-from .routes import auth, main, onboarding, videos
-from .services import preferences
+from .routes import auth, main, onboarding, topics, videos
+from .services import cards, preferences
 
 csrf = CSRFProtect()
 
@@ -43,6 +43,7 @@ def create_app(test_config=None):
     app.config.from_mapping(
         DATABASE=os.path.join(app.instance_path, "focusfeed.db"),
         YOUTUBE_API_KEY=os.environ.get("YOUTUBE_API_KEY"),
+        TOPIC_INFO_LIVE=True,  # look up topic summaries on Wikipedia
         SESSION_COOKIE_SAMESITE="Lax",
     )
     if test_config:
@@ -60,7 +61,9 @@ def create_app(test_config=None):
     app.register_blueprint(auth.bp)
     app.register_blueprint(main.bp)
     app.register_blueprint(onboarding.bp)
+    app.register_blueprint(topics.bp)
     app.register_blueprint(videos.bp)
+    app.add_template_filter(cards.slugify, "slug")
 
     @app.context_processor
     def inject_followed_topics():

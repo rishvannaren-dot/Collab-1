@@ -41,7 +41,11 @@
       <h2 class="overline">Followed topics</h2>
       <ul>
         {% for topic in followed %}
-          <li>{{ icons.topic_icon(topic.key, 18) }}<span>{{ topic.label }}</span></li>
+          <li>
+            <a class="followed-link{% if request.endpoint == 'topics.interest' and request.view_args.key == topic.key %} active{% endif %}" href="{{ url_for('topics.interest', key=topic.key) }}">
+              {{- icons.topic_icon(topic.key, 18) }}<span>{{ topic.label }}</span>
+            </a>
+          </li>
         {% endfor %}
       </ul>
     </div>

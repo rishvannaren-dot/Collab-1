@@ -40,6 +40,26 @@ def test_same_day_is_stable_and_topic_changes_next_day():
     assert a[0]["topic"] != c[0]["topic"] or a[0]["chapter"] != c[0]["chapter"]
 
 
+def test_slugify():
+    assert cards.slugify("Work, Energy and Power") == "work-energy-and-power"
+    assert cards.slugify("Cell: The Unit of Life") == "cell-the-unit-of-life"
+    assert cards.slugify("Newton's three laws") == "newton-s-three-laws"
+
+
+def test_card_links_back_to_its_chapter():
+    syllabus = cards.load_syllabus()
+    card = cards.build_cards(prefs("jee"), syllabus, date(2026, 10, 17))[0]
+    subject, chapter = cards.find_chapter(syllabus, card["subject_key"], card["slug"])
+    assert subject["label"] == card["subject"]
+    assert chapter["name"] == card["chapter"]
+
+
+def test_find_chapter_unknown():
+    syllabus = cards.load_syllabus()
+    assert cards.find_chapter(syllabus, "physics", "no-such-chapter") is None
+    assert cards.find_chapter(syllabus, "astrology", "electrostatics") is None
+
+
 def test_no_cards_for_general_goal_or_young_grade():
     syllabus = cards.load_syllabus()
     assert cards.build_cards(prefs("general"), syllabus, date(2026, 10, 17)) == []

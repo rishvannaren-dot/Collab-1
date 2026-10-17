@@ -13,6 +13,8 @@ def app(tmp_path):
             "SECRET_KEY": "test",
             # Most tests post forms directly; test_security.py checks CSRF with it on.
             "WTF_CSRF_ENABLED": False,
+            # No Wikipedia calls from tests; pages still read the cache.
+            "TOPIC_INFO_LIVE": False,
         }
     )
     with app.app_context():

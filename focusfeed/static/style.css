@@ -400,12 +400,29 @@ footer {
 }
 
 .followed li {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.followed-link {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 0;
-  font-size: 14px;
-  color: var(--text-2);
+  margin: 0 -8px;
+  padding: 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.followed-link:hover {
+  background: var(--subtle);
+  color: var(--text);
+}
+
+.followed-link.active {
+  background: var(--accent-soft);
+  color: var(--accent-text);
 }
 
 .side-foot {
@@ -764,12 +781,19 @@ input::placeholder {
   box-shadow: var(--shadow);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   animation: rise 0.45s ease both;
-  animation-delay: calc(var(--i, 0) * 80ms);
+  animation-delay: calc(min(var(--i, 0), 5) * 80ms);
+  scroll-margin-top: 16px;
 }
 
 .card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
+}
+
+/* The topic a chip linked to. */
+.card:target {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .card-head {
@@ -815,6 +839,85 @@ input::placeholder {
 
 .row-link:hover {
   text-decoration: underline;
+}
+
+/* Topic links and summaries */
+
+.title-link {
+  text-decoration: none;
+}
+
+.title-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+a.chip {
+  display: inline-block;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+a.chip:hover {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.summary {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.source {
+  margin-left: 2px;
+  font-size: 13px;
+  color: var(--muted);
+  text-underline-offset: 2px;
+}
+
+.source:hover {
+  color: var(--accent-text);
+}
+
+.badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 0 10px;
+  border-radius: 100px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.section-gap {
+  margin-top: 40px;
+}
+
+.page-head {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+.tile-lg {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+}
+
+.topic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  font-size: 14px;
 }
 
 /* Videos */

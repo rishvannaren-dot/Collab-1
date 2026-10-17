@@ -17,6 +17,12 @@ CREATE TABLE IF NOT EXISTS video_cache (
   payload TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS topic_info (
+  key TEXT PRIMARY KEY,
+  fetched_at INTEGER NOT NULL,
+  payload TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS login_failures (
   username TEXT NOT NULL,
   failed_at INTEGER NOT NULL

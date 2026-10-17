@@ -1,0 +1,13 @@
+{
+  "_comment": "Things to explore for each interest. Each entry is a Wikipedia article title; the part in brackets is hidden on the page.",
+  "topics": {
+    "science-tech": ["Artificial intelligence", "Renewable energy", "Quantum computing", "Space exploration", "Semiconductor", "Climate change", "CRISPR gene editing", "Internet"],
+    "education": ["Spaced repetition", "Testing effect", "Pomodoro Technique", "Mind map", "Note-taking", "Test anxiety", "Metacognition", "Procrastination"],
+    "sports": ["Sports science", "Cricket", "Association football", "Athletics (sport)", "Strength training", "Badminton", "Chess", "Olympic Games"],
+    "arts": ["Color theory", "Perspective (graphical)", "Typography", "Sketch (drawing)", "Graphic design", "Indian art", "Photography", "Calligraphy"],
+    "music": ["Music theory", "Rhythm", "Chord (music)", "Raga", "Scale (music)", "Melody", "Carnatic music", "Hindustani classical music"],
+    "history": ["Indus Valley Civilisation", "Maurya Empire", "Mughal Empire", "Indian independence movement", "Renaissance", "Industrial Revolution", "World War II", "Silk Road"],
+    "business": ["Personal finance", "Compound interest", "Budget", "Entrepreneurship", "Inflation", "Stock market", "Supply and demand", "Startup company"],
+    "health": ["Sleep", "Physical fitness", "Nutrition", "Drinking water", "Mental health", "Yoga", "Aerobic exercise", "Mindfulness"]
+  }
+}

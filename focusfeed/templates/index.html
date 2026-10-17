@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Today{% endblock %}
+{% macro summary(info) -%}
+  {% if info %}
+    <p class="summary">{{ info.summary }} <a class="source" href="{{ info.url }}" target="_blank" rel="noopener noreferrer">Wikipedia</a></p>
+  {% endif %}
+{%- endmacro %}
 {% block content %}
   <header class="greeting">
     <p class="muted" data-greeting>{{ greeting }},</p>
@@ -15,17 +20,19 @@
   {% if cards %}
     <div class="cards">
       {% for card in cards %}
+        {% set chapter_url = url_for('topics.chapter', subject_key=card.subject_key, slug=card.slug) %}
         <article class="card" style="--i: {{ loop.index0 }}">
           <div class="card-head">
             <span class="tile">{{ icons.subject_icon(card.subject, 22) }}</span>
             <div>
-              <h3>{{ card.topic }}</h3>
-              <p class="muted">{{ card.subject }} · {{ card.chapter }}</p>
+              <h3><a class="title-link" href="{{ chapter_url }}#{{ card.topic | slug }}">{{ card.topic }}</a></h3>
+              <p class="muted">{{ card.subject }} · <a class="title-link" href="{{ chapter_url }}">{{ card.chapter }}</a></p>
             </div>
           </div>
+          {{ summary(card.info) }}
           <ul class="chips" aria-label="Topics this week">
             {% for t in card.topics %}
-              <li class="chip{% if t == card.topic %} chip-on{% endif %}">{{ t }}</li>
+              <li><a class="chip{% if t == card.topic %} chip-on{% endif %}" href="{{ chapter_url }}#{{ t | slug }}">{{ t }}</a></li>
             {% endfor %}
           </ul>
           {% if card.revise %}<p class="muted small">Revise: {{ card.revise }}</p>{% endif %}
@@ -45,6 +52,32 @@
         <a class="btn btn-primary" href="{{ url_for('videos.index') }}">Open videos</a>
         <a class="btn btn-ghost" href="{{ url_for('onboarding.onboarding') }}">Change preferences</a>
       </div>
+    </div>
+  {% endif %}
+
+  {% if picks %}
+    <div class="section-head section-gap">
+      <h2 class="overline">From your topics</h2>
+    </div>
+    <div class="cards">
+      {% for pick in picks %}
+        {% set topic_url = url_for('topics.interest', key=pick.key) %}
+        <article class="card" style="--i: {{ loop.index0 + cards | length }}">
+          <div class="card-head">
+            <span class="tile">{{ icons.topic_icon(pick.key, 22) }}</span>
+            <div>
+              <h3><a class="title-link" href="{{ topic_url }}">{{ pick.name }}</a></h3>
+              <p class="muted">{{ pick.label }}</p>
+            </div>
+          </div>
+          {% if pick.info %}
+            {{ summary(pick.info) }}
+          {% else %}
+            <p class="muted small">No summary yet. It will appear once Wikipedia can be reached.</p>
+          {% endif %}
+          <a class="row-link" href="{{ topic_url }}">More in {{ pick.label }} {{ icons.icon('chevron', 16) }}</a>
+        </article>
+      {% endfor %}
     </div>
   {% endif %}
 {% endblock %}

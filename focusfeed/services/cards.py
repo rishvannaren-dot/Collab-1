@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 
 from .preferences import GOALS
@@ -15,6 +16,22 @@ SUBJECTS_BY_GOAL = {
 def load_syllabus():
     with open(DATA_DIR / "syllabus.json", encoding="utf-8") as f:
         return json.load(f)
+
+
+def slugify(text):
+    """"Work, Energy and Power" -> "work-energy-and-power", for URLs and page anchors."""
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+
+
+def find_chapter(syllabus, subject_key, slug):
+    """Return (subject, chapter) for a chapter's URL slug, or None."""
+    subject = syllabus["subjects"].get(subject_key)
+    if subject is None:
+        return None
+    for chapter in subject["chapters"]:
+        if slugify(chapter["name"]) == slug:
+            return subject, chapter
+    return None
 
 
 def build_cards(prefs, syllabus, today):
@@ -45,7 +62,9 @@ def build_cards(prefs, syllabus, today):
         cards.append(
             {
                 "subject": subject["label"],
+                "subject_key": key,
                 "chapter": chapter["name"],
+                "slug": slugify(chapter["name"]),
                 "topic": topic,
                 "topics": chapter["topics"],
                 "revise": revise,

@@ -64,7 +64,12 @@ def test_lock_expires_after_window(app):
 @pytest.fixture
 def csrf_client(tmp_path):
     app = create_app(
-        {"TESTING": True, "DATABASE": str(tmp_path / "test.db"), "SECRET_KEY": "test"}
+        {
+            "TESTING": True,
+            "DATABASE": str(tmp_path / "test.db"),
+            "SECRET_KEY": "test",
+            "TOPIC_INFO_LIVE": False,
+        }
     )
     return app.test_client()
 

@@ -23,7 +23,15 @@ Run the tests with `pytest`.
 
 ## How it works
 
-- **Today page** (`/`): study cards. For JEE, NEET, or Board goals in grade 11 or 12, each subject gets one chapter per week and one topic per day, taken from `focusfeed/data/syllabus.json`.
+- **Today page** (`/`): study cards and "From your topics".
+  - For JEE, NEET, or Board goals in grade 11 or 12, each subject gets one chapter per week and one topic per day, taken from `focusfeed/data/syllabus.json`.
+  - Each followed interest gets one thing to explore per day, from `focusfeed/data/interests.json`.
+  - Every card shows a one- or two-line explanation from Wikipedia (see below).
+- **Chapter pages** (`/study/<subject>/<chapter>`): every topic in a chapter with its explanation. Card titles and topic chips link here.
+- **Topic pages** (`/topics/<interest>`): everything to explore for one interest, plus videos. The followed topics in the sidebar link here.
+- **Explanations**: looked up on Wikipedia (Google's web search API is closed to new projects; most of Google's topic summaries come from Wikipedia anyway). No key is needed.
+  - `focusfeed/data/wiki_titles.json` maps syllabus topics to the right article when the name alone would find the wrong one (for example "Transformers" to "Transformer"). Other topics are searched by name.
+  - Results are cached for 7 days, so each topic is looked up at most once a week. If Wikipedia can't be reached, cards say "No summary yet" and it tries again next visit.
 - **Videos page** (`/videos`): one section per topic.
   - Syllabus topics keep only videos from channels in `focusfeed/data/channels.json`.
   - Other interests only get the length and view filters.
@@ -62,10 +70,12 @@ focus-feed/
   focusfeed/
     __init__.py          create_app(): config, database, blueprints
     db.py                SQLite connection
-    schema.sql           users, preferences, video_cache
-    routes/              auth, main (today + privacy), onboarding, videos
-    services/            logic with no Flask in it: preferences, cards, videos
-    data/                syllabus.json, channels.json, videos.json
+    schema.sql           users, preferences, video_cache, topic_info, login_failures
+    routes/              auth, main (today + privacy), onboarding, topics, videos
+    services/            logic with no Flask in it: preferences, cards, explore,
+                         topic_info, videos, login_limits
+    data/                syllabus.json, interests.json, wiki_titles.json,
+                         channels.json, videos.json
     templates/
     static/
   tests/                 pytest

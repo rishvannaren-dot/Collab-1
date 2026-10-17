@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ chapter.name }}{% endblock %}
+{% block content %}
+  <header class="greeting page-head">
+    <span class="tile tile-lg">{{ icons.subject_icon(subject.label, 26) }}</span>
+    <div>
+      <h1>{{ chapter.name }}</h1>
+      <p class="muted">{{ subject.label }} · Class {{ chapter.grade }}</p>
+    </div>
+  </header>
+
+  <div class="section-head">
+    <h2 class="overline">Topics in this chapter</h2>
+    <span class="muted">{{ items | length }} topics</span>
+  </div>
+  <div class="topic-list">
+    {% for item in items %}
+      <article class="card" id="{{ item.anchor }}" style="--i: {{ loop.index0 }}">
+        <div>
+          <h3>{{ item.name }}</h3>
+          {% if item.today %}<span class="badge">Today</span>{% endif %}
+        </div>
+        {% if item.info %}
+          <p class="summary">{{ item.info.summary }}</p>
+        {% else %}
+          <p class="muted small">No summary yet. It will appear once Wikipedia can be reached.</p>
+        {% endif %}
+        <p class="card-links">
+          {% if item.info %}<a class="link" href="{{ item.info.url }}" target="_blank" rel="noopener noreferrer">Read on Wikipedia</a>{% endif %}
+          <a class="link" href="{{ item.video_link }}" target="_blank" rel="noopener noreferrer">Videos on YouTube</a>
+        </p>
+      </article>
+    {% endfor %}
+  </div>
+{% endblock %}

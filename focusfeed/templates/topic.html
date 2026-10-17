@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_videos.html" import video_list %}
+{% block title %}{{ label }}{% endblock %}
+{% block content %}
+  <header class="greeting page-head">
+    <span class="tile tile-lg">{{ icons.topic_icon(key, 26) }}</span>
+    <div>
+      <h1>{{ label }}</h1>
+      {% if following %}
+        <p class="muted">You follow this. A new pick shows on Today each day.</p>
+      {% else %}
+        <p class="muted">You don't follow this yet. <a class="link" href="{{ url_for('onboarding.onboarding') }}">Add it in Preferences</a>.</p>
+      {% endif %}
+    </div>
+  </header>
+
+  <div class="section-head">
+    <h2 class="overline">Explore</h2>
+    <span class="muted">{{ items | length }} topics</span>
+  </div>
+  <div class="cards">
+    {% for item in items %}
+      <article class="card" id="{{ item.name | slug }}" style="--i: {{ loop.index0 }}">
+        <div>
+          <h3>{{ item.name }}</h3>
+          {% if item.today %}<span class="badge">Today's pick</span>{% endif %}
+        </div>
+        {% if item.info %}
+          <p class="summary">{{ item.info.summary }}</p>
+          <a class="row-link" href="{{ item.info.url }}" target="_blank" rel="noopener noreferrer">Read more on Wikipedia {{ icons.icon('chevron', 16) }}</a>
+        {% else %}
+          <p class="muted small">No summary yet. It will appear once Wikipedia can be reached.</p>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </div>
+
+  <section class="vsection section-gap">
+    <h2 class="overline">Videos</h2>
+    {% if videos %}
+      {{ video_list(videos, format_duration) }}
+    {% else %}
+      <p class="muted">No saved videos for this yet.</p>
+    {% endif %}
+    <a class="row-link" href="{{ search_link }}" target="_blank" rel="noopener noreferrer">Search YouTube for {{ label }} {{ icons.icon('chevron', 16) }}</a>
+  </section>
+{% endblock %}
