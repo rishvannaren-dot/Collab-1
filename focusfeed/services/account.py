@@ -18,7 +18,7 @@ PRIVACY_VERSION = "2026-10"
 
 # Every table with a user_id column. Download and delete both use this list,
 # and a test fails if a new table with user_id is missing from it.
-USER_TABLES = ["preferences", "recovery_keys"]
+USER_TABLES = ["preferences", "recovery_keys", "study_plan"]
 SECRET_COLUMNS = {"password_hash", "key_hash"}
 
 

@@ -22,8 +22,10 @@ def student(client):
 
 
 def todays_cards():
+    """Today's cards for the student fixture, who onboarded today (so it's day 1 of each plan)."""
     prefs = {"interests": ["science-tech", "sports"], "grade": 12, "goal": "jee"}
-    return cards.build_cards(prefs, cards.load_syllabus(), DEFAULT_DAY)
+    plans = {k: {"chapter_index": 0, "start_on": DEFAULT_DAY} for k in cards.SUBJECTS_BY_GOAL["jee"]}
+    return cards.build_cards(prefs, cards.load_syllabus(), DEFAULT_DAY, plans)
 
 
 def cache(app, key, summary, title="Some article"):

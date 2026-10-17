@@ -2,7 +2,7 @@ from flask import Blueprint, abort, current_app, g, redirect, render_template, u
 
 from ..db import get_db
 from ..services import cards as cards_service
-from ..services import explore, preferences, topic_info
+from ..services import explore, plan, preferences, topic_info
 from ..services import videos as videos_service
 from . import helpers
 from .auth import login_required
@@ -83,12 +83,20 @@ def chapter(subject_key, slug):
         abort(404)
     subject, chapter = found
 
-    prefs = preferences.get_preferences(get_db(), g.user["id"])
-    today_topic = None
+    db = get_db()
+    prefs = preferences.get_preferences(db, g.user["id"])
+    this_week = None  # today's card, if this is the subject's chapter this week
+    can_start = False  # whether "Study this chapter this week" applies
     if prefs is not None:
-        for card in cards_service.build_cards(prefs, syllabus, helpers.today()):
+        for card in plan.todays_cards(db, g.user["id"], prefs, syllabus, helpers.today()):
             if card["subject_key"] == subject_key and card["slug"] == slug:
-                today_topic = card["topic"]
+                this_week = card
+        can_start = (
+            this_week is None
+            and subject_key in cards_service.SUBJECTS_BY_GOAL.get(prefs["goal"], [])
+            and chapter["grade"] == prefs["grade"]
+        )
+    today_topic = this_week["topic"] if this_week else None
 
     titles = topic_info.load_wiki_titles()
     items = [
@@ -105,4 +113,13 @@ def chapter(subject_key, slug):
     ]
     attach_info(items)
 
-    return render_template("chapter.html", subject=subject, chapter=chapter, items=items)
+    return render_template(
+        "chapter.html",
+        subject=subject,
+        subject_key=subject_key,
+        slug=slug,
+        chapter=chapter,
+        items=items,
+        this_week=this_week,
+        can_start=can_start,
+    )

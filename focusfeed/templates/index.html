@@ -5,6 +5,17 @@
     <p class="summary">{{ info.summary }} <a class="source" href="{{ info.url }}" target="_blank" rel="noopener noreferrer">Wikipedia</a></p>
   {% endif %}
 {%- endmacro %}
+{% macro week_strip(card) -%}
+<ol class="week" aria-label="This week's plan">
+  {% for slot in card.plan %}
+    {% set label = slot.topic if slot.kind == 'learn' else {'review': 'Chapter review', 'practice': 'Practice', 'rest': 'Rest'}[slot.kind] %}
+    <li class="week-step week-{{ slot.kind }}{% if slot.day < card.day %} is-past{% endif %}"{% if slot.day == card.day %} aria-current="step"{% endif %} title="Day {{ slot.day }}: {{ label }}">
+      <span aria-hidden="true">{% if slot.kind == 'learn' %}{{ slot.day }}{% elif slot.kind == 'review' %}R{% elif slot.kind == 'practice' %}P{% else %}&middot;{% endif %}</span>
+      <span class="sr-only">Day {{ slot.day }}: {{ label }}{% if slot.day == card.day %} (today){% endif %}</span>
+    </li>
+  {% endfor %}
+</ol>
+{%- endmacro %}
 {% block content %}
   <header class="greeting">
     <p class="muted" data-greeting>{{ greeting }},</p>
@@ -28,22 +39,45 @@
     <div class="cards">
       {% for card in cards %}
         {% set chapter_url = url_for('topics.chapter', subject_key=card.subject_key, slug=card.slug) %}
-        <article class="card" style="--i: {{ loop.index0 }}">
+        <article class="card" id="card-{{ card.subject_key }}" style="--i: {{ loop.index0 }}">
           <div class="card-head">
             <span class="tile">{{ icons.subject_icon(card.subject, 22) }}</span>
-            <div>
-              <h3><a class="title-link" href="{{ chapter_url }}#{{ card.topic | slug }}">{{ card.topic }}</a></h3>
+            <div class="card-title">
+              {% if card.kind == 'learn' %}
+                <h3><a class="title-link" href="{{ chapter_url }}#{{ card.topic | slug }}">{{ card.topic }}</a></h3>
+              {% elif card.kind == 'review' %}
+                <h3>Chapter review</h3>
+              {% elif card.kind == 'practice' %}
+                <h3>Practice day</h3>
+              {% else %}
+                <h3>Rest day</h3>
+              {% endif %}
               <p class="muted">{{ card.subject }} · <a class="title-link" href="{{ chapter_url }}">{{ card.chapter }}</a></p>
             </div>
+            <span class="card-day">Day {{ card.day }} of 7</span>
           </div>
-          {{ summary(card.info) }}
-          <ul class="chips" aria-label="Topics this week">
-            {% for t in card.topics %}
-              <li><a class="chip{% if t == card.topic %} chip-on{% endif %}" href="{{ chapter_url }}#{{ t | slug }}">{{ t }}</a></li>
-            {% endfor %}
-          </ul>
+          {{ week_strip(card) }}
+          {% if card.kind == 'learn' %}
+            {{ summary(card.info) }}
+            <ul class="chips" aria-label="Topics this week">
+              {% for t in card.topics %}
+                <li><a class="chip{% if t == card.topic %} chip-on{% endif %}" href="{{ chapter_url }}#{{ t | slug }}">{{ t }}</a></li>
+              {% endfor %}
+            </ul>
+          {% elif card.kind == 'review' %}
+            <p class="summary">Close the book. Say or write what you remember about each topic, then check.</p>
+            <ul class="review-list">
+              {% for t in card.topics %}
+                <li><a class="link" href="{{ chapter_url }}#{{ t | slug }}">{{ t }}</a></li>
+              {% endfor %}
+            </ul>
+          {% elif card.kind == 'practice' %}
+            <p class="summary">Solve the exercises at the end of this chapter in your textbook. Stuck? Open the topic on the <a class="link" href="{{ chapter_url }}">chapter page</a>.</p>
+          {% else %}
+            <p class="summary">Nothing new today. Rest, or catch up on anything you missed this week.</p>
+          {% endif %}
           {% if card.revise %}<p class="muted small">Revise: {{ card.revise }}</p>{% endif %}
-          <a class="row-link" href="{{ url_for('videos.index') }}#{{ card.chapter | lower | replace(' ', '-') }}">Watch videos {{ icons.icon('chevron', 16) }}</a>
+          <a class="row-link" href="{{ url_for('videos.index') }}#{{ card.chapter | slug }}">Watch videos {{ icons.icon('chevron', 16) }}</a>
         </article>
       {% endfor %}
     </div>

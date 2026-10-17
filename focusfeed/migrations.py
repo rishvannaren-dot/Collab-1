@@ -25,6 +25,17 @@ MIGRATIONS = [
             "ALTER TABLE users ADD COLUMN consent_version TEXT",
         ],
     ),
+    (
+        3,  # each student's week plan: the chapter each subject is on and since when
+        [
+            "CREATE TABLE study_plan ("
+            " user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,"
+            " subject_key TEXT NOT NULL,"
+            " chapter_index INTEGER NOT NULL,"
+            " start_on TEXT NOT NULL,"
+            " PRIMARY KEY (user_id, subject_key))",
+        ],
+    ),
 ]
 
 

@@ -9,6 +9,16 @@
     </div>
   </header>
 
+  {% if this_week %}
+    <p class="plan-state"><span class="badge">This week's chapter · Day {{ this_week.day }} of 7</span></p>
+  {% elif can_start %}
+    <form method="post" action="{{ url_for('study.start', subject_key=subject_key, slug=slug) }}" class="plan-state">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-ghost">Study this chapter this week</button>
+      <span class="muted small">Day 1 would start today.</span>
+    </form>
+  {% endif %}
+
   <div class="section-head">
     <h2 class="overline">Topics in this chapter</h2>
     <span class="muted">{{ items | length }} topics</span>

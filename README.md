@@ -24,7 +24,9 @@ Run the tests with `pytest`.
 ## How it works
 
 - **Today page** (`/`): study cards and "From your topics".
-  - For JEE, NEET, or Board goals in grade 11 or 12, each subject gets one chapter per week and one topic per day, taken from `focusfeed/data/syllabus.json`.
+  - For JEE, NEET, or Board goals in grade 11 or 12, each subject follows a **week plan** through the grade's chapters in `focusfeed/data/syllabus.json`: day 1 is the chapter's first topic, one topic a day in textbook order with no repeats, then a review day, a practice day if there is room, and a rest day on day 7. The next chapter starts on day 8.
+  - A plan starts at chapter 1 on the day the student finishes onboarding, and restarts if they change grade or goal. "Study this chapter this week" on any chapter page makes that chapter day 1 today.
+  - Students who onboarded before plans existed follow a shared Monday-to-Sunday rotation until they pick a chapter or change grade or goal.
   - Each followed interest gets one thing to explore per day, from `focusfeed/data/interests.json`.
   - Every card shows a one- or two-line explanation from Wikipedia (see below).
 - **Chapter pages** (`/study/<subject>/<chapter>`): every topic in a chapter with its explanation. Card titles and topic chips link here.
