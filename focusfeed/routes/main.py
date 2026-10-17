@@ -1,10 +1,9 @@
-from datetime import date, datetime
-
 from flask import Blueprint, g, redirect, render_template, url_for
 
 from ..db import get_db
 from ..services import cards as cards_service
 from ..services import explore, preferences, topic_info
+from . import helpers
 from .auth import login_required
 from .topics import attach_info
 
@@ -33,7 +32,7 @@ def index():
     if prefs is None:
         return redirect(url_for("onboarding.onboarding"))
 
-    today = date.today()
+    today = helpers.today()
     cards = cards_service.build_cards(prefs, cards_service.load_syllabus(), today)
     picks = explore.todays_picks(prefs["interests"], explore.load_interest_topics(), today)
 
@@ -50,7 +49,7 @@ def index():
         cards=cards,
         picks=picks,
         goal_label=preferences.GOALS.get(prefs["goal"], ""),
-        greeting=greeting_for(datetime.now().hour),
+        greeting=greeting_for(helpers.now().hour),
         today=today,
     )
 

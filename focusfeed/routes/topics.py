@@ -1,11 +1,10 @@
-from datetime import date
-
 from flask import Blueprint, abort, current_app, g, redirect, render_template, url_for
 
 from ..db import get_db
 from ..services import cards as cards_service
 from ..services import explore, preferences, topic_info
 from ..services import videos as videos_service
+from . import helpers
 from .auth import login_required
 
 bp = Blueprint("topics", __name__)
@@ -35,7 +34,7 @@ def interest(key):
 
     label = preferences.INTERESTS[key]
     topics = explore.load_interest_topics()
-    picks = explore.todays_picks(prefs["interests"], topics, date.today())
+    picks = explore.todays_picks(prefs["interests"], topics, helpers.today())
     today_article = next((p["article"] for p in picks if p["key"] == key), None)
 
     items = [
@@ -87,7 +86,7 @@ def chapter(subject_key, slug):
     prefs = preferences.get_preferences(get_db(), g.user["id"])
     today_topic = None
     if prefs is not None:
-        for card in cards_service.build_cards(prefs, syllabus, date.today()):
+        for card in cards_service.build_cards(prefs, syllabus, helpers.today()):
             if card["subject_key"] == subject_key and card["slug"] == slug:
                 today_topic = card["topic"]
 

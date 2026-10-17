@@ -1,11 +1,10 @@
-from datetime import date
-
 from flask import Blueprint, current_app, g, redirect, render_template, url_for
 
 from ..db import get_db
 from ..services import cards as cards_service
 from ..services import preferences
 from ..services import videos as videos_service
+from . import helpers
 from .auth import login_required
 
 bp = Blueprint("videos", __name__)
@@ -19,7 +18,7 @@ def index():
     if prefs is None:
         return redirect(url_for("onboarding.onboarding"))
 
-    cards = cards_service.build_cards(prefs, cards_service.load_syllabus(), date.today())
+    cards = cards_service.build_cards(prefs, cards_service.load_syllabus(), helpers.today())
     sections = videos_service.build_sections(prefs, cards)
 
     api_key = current_app.config.get("YOUTUBE_API_KEY")

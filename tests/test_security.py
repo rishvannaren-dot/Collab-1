@@ -1,10 +1,9 @@
-import re
-
 import pytest
 
-from focusfeed import create_app, load_secret_key
+from focusfeed import load_secret_key
 from focusfeed.db import get_db
 from focusfeed.services import login_limits
+from tests.helpers import csrf_token
 
 
 def register(client, username="alice", password="longenough1"):
@@ -59,24 +58,6 @@ def test_lock_expires_after_window(app):
 
 
 # CSRF protection
-
-
-@pytest.fixture
-def csrf_client(tmp_path):
-    app = create_app(
-        {
-            "TESTING": True,
-            "DATABASE": str(tmp_path / "test.db"),
-            "SECRET_KEY": "test",
-            "TOPIC_INFO_LIVE": False,
-        }
-    )
-    return app.test_client()
-
-
-def csrf_token(client, path):
-    html = client.get(path).data.decode()
-    return re.search(r'name="csrf_token" value="([^"]+)"', html).group(1)
 
 
 def test_form_without_csrf_token_is_rejected(csrf_client):

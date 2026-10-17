@@ -1,10 +1,10 @@
 import time
-from datetime import date
 
 import pytest
 
 from focusfeed.db import get_db
 from focusfeed.services import cards, explore, topic_info
+from tests.conftest import DEFAULT_DAY
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ def student(client):
 
 def todays_cards():
     prefs = {"interests": ["science-tech", "sports"], "grade": 12, "goal": "jee"}
-    return cards.build_cards(prefs, cards.load_syllabus(), date.today())
+    return cards.build_cards(prefs, cards.load_syllabus(), DEFAULT_DAY)
 
 
 def cache(app, key, summary, title="Some article"):
@@ -121,7 +121,7 @@ def test_today_shows_summaries_for_cards_and_followed_topics(student, app):
     card = todays_cards()[0]
     cache(app, f"{card['subject']}: {card['topic']}", "A short explanation of the topic.")
     pick = explore.todays_picks(
-        ["science-tech", "sports"], explore.load_interest_topics(), date.today()
+        ["science-tech", "sports"], explore.load_interest_topics(), DEFAULT_DAY
     )[1]
     cache(app, f"Sports: {pick['article']}", "A short explanation of the pick.")
 

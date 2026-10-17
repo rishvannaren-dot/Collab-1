@@ -4,8 +4,9 @@ import secrets
 from flask import Flask, flash, g, redirect, render_template, request, url_for
 from flask_wtf.csrf import CSRFError, CSRFProtect
 
-from . import db
+from . import cli, db
 from .routes import auth, main, onboarding, topics, videos
+from .routes.helpers import safe_next
 from .services import cards, preferences
 
 csrf = CSRFProtect()
@@ -44,6 +45,7 @@ def create_app(test_config=None):
         DATABASE=os.path.join(app.instance_path, "focusfeed.db"),
         YOUTUBE_API_KEY=os.environ.get("YOUTUBE_API_KEY"),
         TOPIC_INFO_LIVE=True,  # look up topic summaries on Wikipedia
+        APP_TIMEZONE="Asia/Kolkata",  # when "today" starts
         SESSION_COOKIE_SAMESITE="Lax",
     )
     if test_config:
@@ -55,6 +57,7 @@ def create_app(test_config=None):
 
     csrf.init_app(app)
     db.init_app(app)
+    cli.init_app(app)
     with app.app_context():
         db.init_db()  # safe to repeat: tables are only created if missing
 
@@ -86,10 +89,12 @@ def create_app(test_config=None):
 
     @app.errorhandler(CSRFError)
     def csrf_failed(error):
-        # Usually a form left open too long. Send them back to the form to retry.
-        flash("That form expired. Please try again.")
-        if request.endpoint == "auth.logout":
-            return redirect(url_for("main.index"))
-        return redirect(request.path)
+        # Usually a form left open too long. Send them back to try again: to the
+        # form itself if it has a page, else to where the form was shown.
+        flash("That form expired. Please try again.", "error")
+        rule = request.url_rule
+        if rule is not None and "GET" in rule.methods:
+            return redirect(request.path)
+        return redirect(safe_next(request.form.get("next"), url_for("main.index")))
 
     return app
