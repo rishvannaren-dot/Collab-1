@@ -7,6 +7,7 @@
 {%- endmacro %}
 {% macro logout_button() -%}
 <form action="{{ url_for('auth.logout') }}" method="post" class="inline-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <button type="submit" class="icon-btn" aria-label="Log out">{{ icons.icon('log-out') }}</button>
 </form>
 {%- endmacro %}

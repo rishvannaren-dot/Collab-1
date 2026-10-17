@@ -18,7 +18,7 @@ Run the tests with `pytest`.
 
 ## Settings (`.env`, never commit it)
 
-- `SECRET_KEY`: signs login sessions. Set it to a long random string.
+- `SECRET_KEY`: signs login sessions. Leave it empty while developing and the app saves a random key in `instance/secret_key`. On a real server, set it to a long random string (for example the output of `python -c "import secrets; print(secrets.token_hex(32))"`).
 - `YOUTUBE_API_KEY`: turns on live video search. Get one from Google Cloud (enable "YouTube Data API v3"). Without it the app still works and shows hand-picked videos plus YouTube search links.
 
 ## How it works

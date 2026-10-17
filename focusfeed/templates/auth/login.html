@@ -6,6 +6,7 @@
     <h1>Welcome back</h1>
     <p class="muted">Sign in to continue to Focus Feed.</p>
     <form method="post" class="stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label for="username">Username</label>
       <input name="username" id="username" autocomplete="username" required>
       <label for="password">Password</label>

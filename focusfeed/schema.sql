@@ -16,3 +16,10 @@ CREATE TABLE IF NOT EXISTS video_cache (
   fetched_at INTEGER NOT NULL,
   payload TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS login_failures (
+  username TEXT NOT NULL,
+  failed_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS login_failures_by_user ON login_failures (username, failed_at);

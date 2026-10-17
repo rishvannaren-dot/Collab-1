@@ -6,7 +6,15 @@ from focusfeed.db import init_db
 
 @pytest.fixture
 def app(tmp_path):
-    app = create_app({"TESTING": True, "DATABASE": str(tmp_path / "test.db")})
+    app = create_app(
+        {
+            "TESTING": True,
+            "DATABASE": str(tmp_path / "test.db"),
+            "SECRET_KEY": "test",
+            # Most tests post forms directly; test_security.py checks CSRF with it on.
+            "WTF_CSRF_ENABLED": False,
+        }
+    )
     with app.app_context():
         init_db()
     return app

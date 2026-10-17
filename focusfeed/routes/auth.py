@@ -1,5 +1,6 @@
 import functools
 import sqlite3
+import time
 
 from flask import (
     Blueprint,
@@ -14,6 +15,7 @@ from flask import (
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from ..db import get_db
+from ..services import login_limits
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -78,16 +80,21 @@ def login():
     if request.method == "POST":
         username = request.form["username"].strip()
         password = request.form["password"]
+        db = get_db()
+        now = int(time.time())
 
-        user = (
-            get_db()
-            .execute("SELECT * FROM users WHERE username = ?", (username,))
-            .fetchone()
-        )
+        if login_limits.is_locked(db, username, now):
+            minutes = login_limits.WINDOW_SECONDS // 60
+            flash(f"Too many failed sign-ins. Try again in {minutes} minutes.")
+            return render_template("auth/login.html")
+
+        user = db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
 
         if user is None or not check_password_hash(user["password_hash"], password):
+            login_limits.record_failure(db, username, now)
             flash("Incorrect username or password.")
         else:
+            login_limits.clear_failures(db, username)
             session.clear()
             session["user_id"] = user["id"]
             return redirect(url_for("main.index"))

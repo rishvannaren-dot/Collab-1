@@ -6,6 +6,7 @@
     <p class="muted">Pick what you want to follow. You can always change this later.</p>
 
     <form method="post" class="stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="search">
         {{ icons.icon('search', 18) }}
         <input type="search" placeholder="Search topics" aria-label="Search topics" data-topic-search>
