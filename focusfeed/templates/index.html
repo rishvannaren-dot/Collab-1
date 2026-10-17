@@ -41,7 +41,7 @@
     <div class="cards">
       {% for card in cards %}
         {% set chapter_url = url_for('topics.chapter', subject_key=card.subject_key, slug=card.slug) %}
-        <article class="card{% if card.studied and card.studied.last_studied_on == today.isoformat() %} is-done{% endif %}" id="card-{{ card.subject_key }}" style="--i: {{ loop.index0 }}">
+        <article class="card{% if card.studied and card.studied.last_studied_on == today.isoformat() %} is-done{% endif %}" id="card-{{ card.subject_key }}">
           <div class="card-head">
             <span class="tile">{{ icons.subject_icon(card.subject, 22) }}</span>
             <div class="card-title">
@@ -159,7 +159,7 @@
     <div class="cards">
       {% for pick in picks %}
         {% set topic_url = url_for('topics.interest', key=pick.key) %}
-        <article class="card" style="--i: {{ loop.index0 + cards | length }}">
+        <article class="card">
           <div class="card-head">
             <span class="tile">{{ icons.topic_icon(pick.key, 22) }}</span>
             <div>

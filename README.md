@@ -74,6 +74,21 @@ The list ships empty on purpose: add only videos someone on the team has watched
 - It also has **Download my data** (a JSON file) and **Delete my account** (password plus typed username; deletes every row about the student at once). Sign-up stores when the student agreed to the privacy notes and which version (`PRIVACY_VERSION` in `services/account.py`).
 - Any new table with a `user_id` column must be added to `USER_TABLES` in `services/account.py`, or a test fails. That keeps download and delete complete.
 
+## Deploying
+
+`python run.py` is for your own computer. Auto-reload and the debugger are on only with `FLASK_DEBUG=1` (the `.env.example` sets it; never set it on a server). On a server:
+
+```bash
+pip install -r requirements.txt
+SECRET_KEY=... FOCUSFEED_HTTPS=1 waitress-serve --listen=0.0.0.0:8000 --call focusfeed:create_app
+```
+
+- `SECRET_KEY`: a long random string (see Settings above).
+- `FOCUSFEED_HTTPS=1`: only when the site is served over HTTPS (it marks the login cookie Secure).
+- `TRUST_PROXY=1`: only behind a proxy such as nginx that sets `X-Forwarded-For` and `X-Forwarded-Proto`.
+
+Every response carries security headers, including a Content-Security-Policy that only allows Focus Feed's own scripts, styles and fonts plus YouTube thumbnails. So no inline `style="..."` attributes or `onclick` handlers in templates: put styles in `style.css` and behaviour in `app.js` (a test checks every page). Fonts are served from `focusfeed/static/fonts` (SIL Open Font License), so no other company sees visits.
+
 ## For the team
 
 Run these in the project folder with the virtual environment active:

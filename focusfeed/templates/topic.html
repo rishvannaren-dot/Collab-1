@@ -22,7 +22,7 @@
   </div>
   <div class="cards">
     {% for item in items %}
-      <article class="card" id="{{ item.name | slug }}" style="--i: {{ loop.index0 }}">
+      <article class="card" id="{{ item.name | slug }}">
         <div>
           <h3>{{ item.name }}</h3>
           {% if item.today %}<span class="badge">Today's pick</span>{% endif %}

@@ -1,5 +1,47 @@
 /* Focus Feed: warm off-white light theme, deep navy dark theme, royal-blue accent. */
 
+/* Fonts are served by Focus Feed itself (SIL Open Font License, see static/fonts). */
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/dm-sans-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/dm-sans-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/dm-sans-latin-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/newsreader-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("fonts/newsreader-latin-600-normal.woff2") format("woff2");
+}
+
 :root {
   --bg: #f8f7f3;
   --surface: #ffffff;
@@ -1083,6 +1125,32 @@ a.user-name.active {
 .card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
+}
+
+/* Cards fade in one after another (no inline styles: the CSP blocks them). */
+.cards > :nth-child(2),
+.topic-list > :nth-child(2) {
+  --i: 1;
+}
+
+.cards > :nth-child(3),
+.topic-list > :nth-child(3) {
+  --i: 2;
+}
+
+.cards > :nth-child(4),
+.topic-list > :nth-child(4) {
+  --i: 3;
+}
+
+.cards > :nth-child(5),
+.topic-list > :nth-child(5) {
+  --i: 4;
+}
+
+.cards > :nth-child(n + 6),
+.topic-list > :nth-child(n + 6) {
+  --i: 5;
 }
 
 /* The topic a chip linked to. */

@@ -32,7 +32,7 @@
   <progress class="bar" value="{{ done }}" max="{{ items | length }}" aria-label="{{ done }} of {{ items | length }} topics studied"></progress>
   <div class="topic-list">
     {% for item in items %}
-      <article class="card" id="{{ item.anchor }}" style="--i: {{ loop.index0 }}">
+      <article class="card" id="{{ item.anchor }}">
         <div>
           <h3>{{ item.name }}</h3>
           {% if item.today %}<span class="badge">Today</span>{% endif %}

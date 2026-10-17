@@ -4,8 +4,9 @@ from datetime import timedelta
 
 from flask import Flask, flash, g, redirect, render_template, request, url_for
 from flask_wtf.csrf import CSRFError, CSRFProtect
+from werkzeug.middleware.proxy_fix import ProxyFix
 
-from . import cli, db
+from . import cli, db, security
 from .routes import account, auth, browse, main, onboarding, study, topics, videos
 from .routes.helpers import format_date, safe_next
 from .services import cards, preferences
@@ -40,6 +41,20 @@ def load_secret_key(instance_path):
     return key
 
 
+# Shown on error pages: (title, message).
+ERRORS = {
+    400: ("That request didn't look right", "Please go back and try again."),
+    405: ("That didn't work", "That page can't be used like that. Please go back and try again."),
+    413: ("That was too big to send", "Please go back and send something smaller."),
+    500: ("Something went wrong", "It's not you, it's us. Please try again in a moment."),
+}
+
+
+def debug_enabled(environ=os.environ):
+    """Werkzeug's debugger runs any code typed into it, so it is only on when asked for."""
+    return environ.get("FLASK_DEBUG") == "1"
+
+
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
@@ -49,6 +64,10 @@ def create_app(test_config=None):
         APP_TIMEZONE="Asia/Kolkata",  # when "today" starts
         SESSION_COOKIE_SAMESITE="Lax",
         PERMANENT_SESSION_LIFETIME=timedelta(days=30),  # "Keep me signed in"
+        # Only over HTTPS: set FOCUSFEED_HTTPS=1 on a server with HTTPS, or login breaks.
+        SESSION_COOKIE_SECURE=os.environ.get("FOCUSFEED_HTTPS") == "1",
+        MAX_CONTENT_LENGTH=64 * 1024,  # forms are tiny; refuse anything bigger
+        TRUST_PROXY=os.environ.get("TRUST_PROXY") == "1",  # behind nginx or similar
     )
     if test_config:
         app.config.update(test_config)
@@ -57,9 +76,14 @@ def create_app(test_config=None):
     if not app.config.get("SECRET_KEY"):
         app.config["SECRET_KEY"] = load_secret_key(app.instance_path)
 
+    if app.config["TRUST_PROXY"]:
+        # Use the client's address and https from the proxy's X-Forwarded-* headers.
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+
     csrf.init_app(app)
     db.init_app(app)
     cli.init_app(app)
+    security.init_app(app)
     with app.app_context():
         db.init_db()  # safe to repeat: tables are only created if missing
 
@@ -89,9 +113,22 @@ def create_app(test_config=None):
             ]
         }
 
+    @app.route("/favicon.ico")
+    def favicon():
+        # Browsers ask for this path even when the page names an SVG icon.
+        return redirect(url_for("static", filename="favicon.svg"), code=301)
+
     @app.errorhandler(404)
     def not_found(error):
         return render_template("404.html"), 404
+
+    def friendly_error(error):
+        code = getattr(error, "code", 500) or 500
+        title, message = ERRORS.get(code, ERRORS[500])
+        return render_template("error.html", title=title, message=message), code
+
+    for code in ERRORS:
+        app.register_error_handler(code, friendly_error)
 
     @app.errorhandler(CSRFError)
     def csrf_failed(error):
