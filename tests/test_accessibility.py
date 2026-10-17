@@ -209,6 +209,31 @@ def test_system_dark_theme_matches_the_dark_toggle():
     assert system_tokens == tokens(':root[data-theme="dark"]')
 
 
+def enclosing_blocks(css, position):
+    """The selectors and at-rules wrapping a position in the stylesheet, outermost first."""
+    stack, start = [], 0
+    for match in re.finditer(r"[{};]", css[:position]):
+        if match.group() == "{":
+            stack.append(css[start : match.start()].strip())
+        elif match.group() == "}" and stack:
+            stack.pop()
+        start = match.end()
+    return stack
+
+
+def test_motion_only_runs_for_people_who_have_not_asked_for_less():
+    """Every animation, and page-to-page transitions, sit inside prefers-reduced-motion: no-preference."""
+    css = re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)
+    leaks = []
+    for match in re.finditer(r"(?:animation(?:-name)?\s*:\s*([^;}]+))|@view-transition", css):
+        if match.group(1) and match.group(1).strip().startswith("none"):
+            continue
+        blocks = enclosing_blocks(css, match.start())
+        if not any("prefers-reduced-motion: no-preference" in b for b in blocks):
+            leaks.append(f"{' > '.join(blocks) or '(top level)'}: {match.group(0)[:60]}")
+    assert not leaks, leaks
+
+
 @pytest.mark.parametrize(
     ("html", "problem"),
     (
