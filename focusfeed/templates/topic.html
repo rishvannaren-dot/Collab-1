@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "_videos.html" import video_list %}
+{% from "_forms.html" import follow_form %}
 {% block title %}{{ label }}{% endblock %}
 {% block content %}
   <header class="greeting page-head">
@@ -9,9 +10,10 @@
       {% if following %}
         <p class="muted">You follow this. A new pick shows on Today each day.</p>
       {% else %}
-        <p class="muted">You don't follow this yet. <a class="link" href="{{ url_for('onboarding.onboarding') }}">Add it in Preferences</a>.</p>
+        <p class="muted">You don't follow this yet.</p>
       {% endif %}
     </div>
+    <div class="page-head-action">{{ follow_form(key, label, following, request.path) }}</div>
   </header>
 
   <div class="section-head">

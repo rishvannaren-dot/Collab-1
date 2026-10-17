@@ -57,3 +57,31 @@ def save_preferences(db, user_id, prefs):
         (user_id, ",".join(prefs["interests"]), prefs["grade"], prefs["goal"]),
     )
     db.commit()
+
+
+def follow(db, user_id, key):
+    """Add an interest. Returns an error message, or None. Unknown keys raise KeyError."""
+    if key not in INTERESTS:
+        raise KeyError(key)
+    prefs = get_preferences(db, user_id)
+    if prefs is None:
+        return "Finish setting up your preferences first."
+    if key not in prefs["interests"]:
+        prefs["interests"].append(key)
+        save_preferences(db, user_id, prefs)
+    return None
+
+
+def unfollow(db, user_id, key):
+    """Remove an interest, keeping at least one. Returns an error message, or None."""
+    if key not in INTERESTS:
+        raise KeyError(key)
+    prefs = get_preferences(db, user_id)
+    if prefs is None:
+        return "Finish setting up your preferences first."
+    if key in prefs["interests"]:
+        if len(prefs["interests"]) == 1:
+            return "Follow at least one topic."
+        prefs["interests"].remove(key)
+        save_preferences(db, user_id, prefs)
+    return None

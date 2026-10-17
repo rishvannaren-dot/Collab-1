@@ -6,7 +6,7 @@ from flask import Flask, flash, g, redirect, render_template, request, url_for
 from flask_wtf.csrf import CSRFError, CSRFProtect
 
 from . import cli, db
-from .routes import account, auth, main, onboarding, study, topics, videos
+from .routes import account, auth, browse, main, onboarding, study, topics, videos
 from .routes.helpers import format_date, safe_next
 from .services import cards, preferences
 
@@ -65,6 +65,7 @@ def create_app(test_config=None):
 
     app.register_blueprint(account.bp)
     app.register_blueprint(auth.bp)
+    app.register_blueprint(browse.bp)
     app.register_blueprint(main.bp)
     app.register_blueprint(onboarding.bp)
     app.register_blueprint(study.bp)

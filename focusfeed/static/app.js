@@ -49,9 +49,14 @@
   if (search) {
     search.addEventListener("input", function () {
       var query = search.value.trim().toLowerCase();
-      document.querySelectorAll("[data-topic]").forEach(function (row) {
+      var rows = document.querySelectorAll("[data-topic]");
+      var shown = 0;
+      rows.forEach(function (row) {
         row.hidden = query !== "" && row.getAttribute("data-topic").indexOf(query) === -1;
+        if (!row.hidden) shown += 1;
       });
+      var empty = document.querySelector("[data-search-empty]");
+      if (empty) empty.hidden = shown > 0;
     });
   }
 })();

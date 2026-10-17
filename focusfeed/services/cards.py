@@ -47,6 +47,32 @@ def grade_chapters(syllabus, subject_key, grade):
     return [c for c in subject["chapters"] if c["grade"] == grade]
 
 
+def syllabus_for(prefs, syllabus):
+    """The student's syllabus: each subject of their goal with its chapters for their grade."""
+    subjects = []
+    for key in SUBJECTS_BY_GOAL.get(prefs["goal"], []):
+        chapters = grade_chapters(syllabus, key, prefs["grade"])
+        if not chapters:
+            continue
+        subjects.append(
+            {
+                "key": key,
+                "label": syllabus["subjects"][key]["label"],
+                "chapters": [
+                    {
+                        "name": c["name"],
+                        "slug": slugify(c["name"]),
+                        "grade": c["grade"],
+                        "topics": c["topics"],
+                        "index": i,
+                    }
+                    for i, c in enumerate(chapters)
+                ],
+            }
+        )
+    return subjects
+
+
 def plan_position(chapter_index, start_on, today, n_chapters):
     """Where a plan is today: (chapter index, day 0-6 of the week, weeks since the start).
 

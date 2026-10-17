@@ -1181,6 +1181,99 @@ a.chip:hover {
   font-size: 14px;
 }
 
+/* Explore */
+
+.explore-search {
+  margin-bottom: 24px;
+}
+
+details.subject {
+  margin-bottom: 20px;
+}
+
+details.subject > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: auto;
+  margin-bottom: 12px;
+  color: var(--text);
+  list-style: none;
+}
+
+details.subject > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.subject > summary::before {
+  content: "\25B8";
+  color: var(--muted);
+  transition: transform 0.15s ease;
+}
+
+details.subject[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.subject-name {
+  font-family: var(--serif);
+  font-size: 22px;
+}
+
+.chapter-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chapter-row-main {
+  min-width: 0;
+}
+
+.btn-small {
+  min-height: 36px;
+  padding: 6px 14px;
+  font-size: 14px;
+}
+
+.interest-link {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  text-decoration: none;
+}
+
+.interest-link:hover span:last-child {
+  text-decoration: underline;
+}
+
+.page-head-action {
+  margin-left: auto;
+}
+
+.card-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.card-foot .row-link {
+  flex: 1;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.change-chapter {
+  white-space: nowrap;
+}
+
 /* Study record */
 
 .mark-q {

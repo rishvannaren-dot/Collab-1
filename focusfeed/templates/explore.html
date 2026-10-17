@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% from "_forms.html" import follow_form %}
+{% block title %}Explore{% endblock %}
+{% block content %}
+  <header class="greeting">
+    <h1>Explore</h1>
+    <p class="muted">Your syllabus and your topics, all in one place.</p>
+  </header>
+
+  <div class="search explore-search">
+    {{ icons.icon('search', 18) }}
+    <input type="search" placeholder="Search chapters, topics and interests" aria-label="Search chapters, topics and interests" data-topic-search>
+  </div>
+  <p class="muted" data-search-empty hidden>No matches.</p>
+
+  <section class="vsection" aria-labelledby="syllabus-heading">
+    <h2 class="overline" id="syllabus-heading">Your syllabus</h2>
+    {% if subjects %}
+      {% for subject in subjects %}
+        <details class="subject" id="{{ subject.key }}" open>
+          <summary><span class="subject-name">{{ subject.label }}</span> <span class="muted small">{{ subject.chapters | length }} chapters</span></summary>
+          <div class="topic-list">
+            {% for chapter in subject.chapters %}
+              <article class="card chapter-row" data-topic="{{ (chapter.name ~ ' ' ~ chapter.topics | join(' ')) | lower }}">
+                <div class="chapter-row-main">
+                  <h3><a class="title-link" href="{{ url_for('topics.chapter', subject_key=subject.key, slug=chapter.slug) }}">{{ chapter.name }}</a></h3>
+                  <p class="muted small">{{ chapter.topics | length }} topics · {{ chapter.done }} of {{ chapter.topics | length }} studied</p>
+                </div>
+                {% if chapter.this_week %}
+                  <span class="badge">This week</span>
+                {% else %}
+                  <form method="post" action="{{ url_for('study.start', subject_key=subject.key, slug=chapter.slug) }}" class="inline-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-ghost btn-small" aria-label="Study {{ chapter.name }} this week">Study this week</button>
+                  </form>
+                {% endif %}
+              </article>
+            {% endfor %}
+          </div>
+        </details>
+      {% endfor %}
+    {% else %}
+      <p class="notice">Study cards cover JEE, NEET and Board exams for Classes 11 and 12 for now. Your topics below still shape Today and Videos.</p>
+    {% endif %}
+  </section>
+
+  <section class="vsection" aria-labelledby="topics-heading">
+    <h2 class="overline" id="topics-heading">Your topics</h2>
+    <ul class="settings interest-list">
+      {% for key, label, following in interests %}
+        <li data-topic="{{ label | lower }}">
+          <div class="setting setting-static">
+            <a class="interest-link" href="{{ url_for('topics.interest', key=key) }}">
+              <span class="topic-icon">{{ icons.topic_icon(key, 18) }}</span>
+              <span>{{ label }}{% if following %}<span class="sr-only"> (following)</span>{% endif %}</span>
+            </a>
+            {{ follow_form(key, label, following, url_for('browse.index') ~ '#topics-heading') }}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

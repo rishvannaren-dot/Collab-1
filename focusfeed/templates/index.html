@@ -88,7 +88,10 @@
               <p class="summary">You covered every topic this week. Rest.</p>
             {% endif %}
           {% endif %}
-          <a class="row-link" href="{{ url_for('videos.index') }}#{{ card.chapter | slug }}">Watch videos {{ icons.icon('chevron', 16) }}</a>
+          <div class="card-foot">
+            <a class="row-link" href="{{ url_for('videos.index') }}#{{ card.chapter | slug }}">Watch videos {{ icons.icon('chevron', 16) }}</a>
+            <a class="muted small change-chapter" href="{{ url_for('browse.index') }}#{{ card.subject_key }}">Change chapter</a>
+          </div>
         </article>
       {% endfor %}
     </div>
