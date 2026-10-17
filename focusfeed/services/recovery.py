@@ -54,3 +54,9 @@ def verify(db, user_id, text):
         check_password_hash(_DUMMY_HASH, normalize(text))
         return False
     return check_password_hash(row["key_hash"], normalize(text))
+
+
+def remove_key(db, user_id):
+    """Turn the user's key off (after a password change or "sign out everywhere")."""
+    db.execute("DELETE FROM recovery_keys WHERE user_id = ?", (user_id,))
+    db.commit()

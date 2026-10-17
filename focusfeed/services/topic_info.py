@@ -111,9 +111,15 @@ def _query(params, get):
             retry_after=source_health.retry_after_seconds(response),
         )
     try:
-        pages = response.json().get("query", {}).get("pages", [])
+        body = response.json()
     except ValueError:
         raise InfoSourceError("Wikipedia sent something unexpected.")
+    # The API reports its own errors with HTTP 200 and an "error" object.
+    if "error" in body or getattr(response, "headers", {}).get("MediaWiki-API-Error"):
+        raise InfoSourceError(
+            "Wikipedia sent an error.", retry_after=source_health.retry_after_seconds(response)
+        )
+    pages = body.get("query", {}).get("pages", [])
     if not pages:
         return None
     page = pages[0]

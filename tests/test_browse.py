@@ -110,3 +110,9 @@ def test_following_does_not_reset_the_plan(client, app):
 def test_today_cards_link_to_explore(client):
     make_student(client)
     assert 'href="/explore#physics"' in client.get("/").data.decode()
+
+
+def test_study_buttons_name_contains_visible_label(client):
+    make_student(client)
+    html = client.get("/explore").data.decode()
+    assert 'aria-label="Study this week: Current Electricity">Study this week<' in html

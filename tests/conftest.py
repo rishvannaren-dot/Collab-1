@@ -20,6 +20,8 @@ def make_app(tmp_path, **overrides):
         "WTF_CSRF_ENABLED": False,
         # No Wikipedia calls from tests; pages still read the cache.
         "TOPIC_INFO_LIVE": False,
+        # Ignore a key exported on the developer's machine.
+        "YOUTUBE_API_KEY": None,
     }
     config.update(overrides)
     return create_app(config)

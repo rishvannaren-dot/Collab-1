@@ -11,7 +11,7 @@ from flask import current_app
 from flask.cli import with_appcontext
 
 from .db import get_db
-from .services import account, clock, login_limits
+from .services import account, clock, login_limits, recovery
 
 
 def backup_db(src_path, dest_dir, day, keep):
@@ -62,8 +62,8 @@ def find_or_fail(db, username):
 
 
 def unlock(db, username):
-    login_limits.clear_failures(db, username.lower())
-    login_limits.clear_failures(db, "reset:" + username.lower())
+    login_limits.clear_failures(db, username.lower()[:64])
+    login_limits.clear_failures(db, "reset:" + username.lower()[:64])
 
 
 @users_group.command("set-password")
@@ -78,8 +78,12 @@ def set_password_command(username):
     if error:
         raise click.ClickException(error)
     account.set_password(db, user["id"], password)
+    recovery.remove_key(db, user["id"])  # a stolen key can't undo the reset
     unlock(db, user["username"])
-    click.echo(f"Password changed for {user['username']}. They are signed out everywhere.")
+    click.echo(
+        f"Password changed for {user['username']}. They are signed out everywhere "
+        "and their recovery key is off; they can make a new one after signing in."
+    )
 
 
 @users_group.command("unlock")

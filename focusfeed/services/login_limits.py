@@ -10,6 +10,9 @@ WINDOW_SECONDS = 15 * 60
 
 def is_locked(db, username, now):
     """True if `username` has MAX_FAILURES failed sign-ins in the last WINDOW_SECONDS."""
+    # Expired rows are deleted on every check, so none stay around for long.
+    db.execute("DELETE FROM login_failures WHERE failed_at <= ?", (now - WINDOW_SECONDS,))
+    db.commit()
     count = db.execute(
         "SELECT COUNT(*) FROM login_failures WHERE username = ? AND failed_at > ?",
         (username, now - WINDOW_SECONDS),

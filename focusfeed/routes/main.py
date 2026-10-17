@@ -47,7 +47,8 @@ def index():
         if card["kind"] == "rest":
             card["catch_up"] = [t for t in card["topics"] if t not in card["studied_topics"]]
         if card["kind"] == "review":
-            card["prompts"] = {t: revision.recall_prompt(card["subject_key"], t, today) for t in card["topics"]}
+            # One prompt for the whole list reads better than the same one per topic.
+            card["prompt"] = revision.recall_prompt(card["subject_key"], "each topic", today)
 
     # Revise today: the student's own studied topics that are due, in their goal's subjects.
     syllabus = cards_service.load_syllabus()
@@ -88,7 +89,7 @@ def index():
         greeting=greeting_for(helpers.now().hour),
         today=today,
         has_recovery_key=recovery.key_created_at(db, g.user["id"]) is not None,
-        finished=progress.day_finished(cards, studied, today),
+        finished=progress.day_finished(cards, studied, today, revise),
         revise=revise,
         revise_more=revise_more,
         wiki_notice=wiki_notice,

@@ -215,6 +215,8 @@ def search_cached(db, api_key, query, get=requests.get, now=time.time):
         (query, int(current), json.dumps(videos)),
     )
     db.commit()
+    # Only a real answer from YouTube ends a pause; a cache hit says nothing about it.
+    source_health.record_success(db, SOURCE)
     return videos
 
 
@@ -232,6 +234,8 @@ def build_sections(prefs, cards):
                 "query": card["query"],
                 "strict": True,
                 "tag": card["chapter"].lower(),
+                # Physics and Chemistry both have "Thermodynamics", so anchors name the subject.
+                "anchor": f"{card['subject_key']}-{card['slug']}",
             }
         )
     for key in prefs["interests"]:
@@ -240,7 +244,7 @@ def build_sections(prefs, cards):
         query = INTEREST_QUERIES.get(key)
         if query:
             sections.append(
-                {"title": key.replace("-", " ").title(), "query": query, "strict": False, "tag": key}
+                {"title": key.replace("-", " ").title(), "query": query, "strict": False, "tag": key, "anchor": key}
             )
     return sections
 
@@ -260,7 +264,6 @@ def resolve_section(section, db, api_key, curated, allow, get=requests.get, live
     if api_key and live:
         try:
             videos = filter_videos(search_cached(db, api_key, section["query"], get=get), allowlist)
-            source_health.record_success(db, SOURCE)
         except StaleVideos as error:
             videos = filter_videos(error.videos, allowlist)
             notice = f"{error} Showing videos saved earlier."

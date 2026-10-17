@@ -12,7 +12,7 @@
   {% endfor %}
 
   {% for section in sections %}
-    <section class="vsection" id="{{ section.tag | slug }}">
+    <section class="vsection" id="{{ section.anchor }}">
       <h2 class="overline">{{ section.title }}</h2>
       {% if section.videos %}
         {{ video_list(section.videos, format_duration) }}

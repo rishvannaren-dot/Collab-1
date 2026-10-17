@@ -33,8 +33,8 @@
     button.addEventListener("click", function () {
       var show = input.type === "password";
       input.type = show ? "text" : "password";
+      // A toggle button keeps one label; aria-pressed says whether it is on.
       button.setAttribute("aria-pressed", show ? "true" : "false");
-      button.setAttribute("aria-label", show ? "Hide password" : "Show password");
     });
   });
 

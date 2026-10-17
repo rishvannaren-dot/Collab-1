@@ -33,7 +33,7 @@
         <form method="post" action="{{ url_for('account.sign_out_everywhere') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="next" value="{{ url_for('account.index') }}">
-          <button type="submit" class="setting"><span>Sign out of all other devices</span>{{ icons.icon('log-out', 16) }}</button>
+          <button type="submit" class="setting"><span>Sign out of all other devices <span class="muted small setting-note">also turns off your recovery key</span></span>{{ icons.icon('log-out', 16) }}</button>
         </form>
       </li>
     </ul>

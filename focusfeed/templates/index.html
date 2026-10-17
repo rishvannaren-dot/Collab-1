@@ -70,10 +70,10 @@
             </ul>
             {{ mark_form(card.topic_key, card.topic, card.studied, '/#card-' ~ card.subject_key, today) }}
           {% elif card.kind == 'review' %}
-            <p class="summary">Close the book. Say or write what you remember about each topic, then check.</p>
+            <p class="summary">Close the book. {{ card.prompt }}</p>
             <ul class="review-list">
               {% for t in card.topics %}
-                <li><a class="link" href="{{ chapter_url }}#{{ t | slug }}">{{ t }}</a> <span class="muted small">{{ card.prompts[t] }}</span></li>
+                <li><a class="link" href="{{ chapter_url }}#{{ t | slug }}">{{ t }}</a></li>
               {% endfor %}
             </ul>
           {% elif card.kind == 'practice' %}
@@ -91,7 +91,7 @@
             {% endif %}
           {% endif %}
           <div class="card-foot">
-            <a class="row-link" href="{{ url_for('videos.index') }}#{{ card.chapter | slug }}">Watch videos {{ icons.icon('chevron', 16) }}</a>
+            <a class="row-link" href="{{ url_for('videos.index') }}#{{ card.subject_key }}-{{ card.slug }}">Watch videos {{ icons.icon('chevron', 16) }}</a>
             <a class="muted small change-chapter" href="{{ url_for('browse.index') }}#{{ card.subject_key }}">Change chapter</a>
           </div>
         </article>

@@ -40,6 +40,12 @@ def sign_in(user_id, session_version, remember=False):
     session["sv"] = session_version
 
 
+def lock_key(username, prefix=""):
+    """The failed-attempt counter for a username: case-insensitive, and short, so
+    junk usernames can't fill the database. Real usernames are at most 30 characters."""
+    return prefix + username.lower()[:64]
+
+
 def lock_minutes():
     return login_limits.WINDOW_SECONDS // 60
 
@@ -105,7 +111,7 @@ def login():
         password = request.form.get("password", "")
         db = get_db()
         now = int(time.time())
-        lock = username.lower()  # "Alice" and "alice" share one counter
+        lock = lock_key(username)
 
         if login_limits.is_locked(db, lock, now):
             flash(f"Too many failed sign-ins. Try again in {lock_minutes()} minutes.", "error")
@@ -117,6 +123,7 @@ def login():
             flash("Incorrect username or password.", "error")
         else:
             login_limits.clear_failures(db, lock)
+            login_limits.clear_failures(db, lock_key(username, "reset:"))
             sign_in(user["id"], user["session_version"], remember=bool(request.form.get("remember")))
             return redirect(url_for("main.index"))
 
@@ -132,7 +139,7 @@ def forgot():
         db = get_db()
         now = int(time.time())
         # Separate from the sign-in counter, so a locked-out student can still reset.
-        lock = "reset:" + username.lower()
+        lock = lock_key(username, "reset:")
 
         error = account.password_error(password, request.form.get("confirm", ""))
         if error is None and login_limits.is_locked(db, lock, now):
@@ -146,7 +153,7 @@ def forgot():
                 version = account.set_password(db, user["id"], password)
                 new_key = recovery.set_key(db, user["id"], now)
                 login_limits.clear_failures(db, lock)
-                login_limits.clear_failures(db, username.lower())
+                login_limits.clear_failures(db, lock_key(username))
                 sign_in(user["id"], version)
                 return render_new_key(
                     new_key,

@@ -66,15 +66,21 @@ def due(db, user_id, today, allowed_keys, limit=DAILY_LIMIT):
 
 
 def record_review(db, user_id, key, remembered, today):
-    """Move the topic's box and due date. Returns False if the user never studied it."""
+    """Move the topic's box and due date. Returns False if the user never studied it.
+
+    A topic that isn't due yet is left alone, so a double tap counts once.
+    """
     row = db.execute(
-        "SELECT box, confidence FROM topic_progress WHERE user_id = ? AND topic_key = ?",
+        "SELECT box, confidence, due_on FROM topic_progress WHERE user_id = ? AND topic_key = ?",
         (user_id, key),
     ).fetchone()
     if row is None:
         return False
+    if row["due_on"] is None or row["due_on"] > today.isoformat():
+        return True
     box, due_on = after_review(row["box"], remembered, today)
-    confidence = row["confidence"] if remembered else min(row["confidence"], 2)
+    # Remembering a topic makes it one step surer; forgetting caps it at Shaky.
+    confidence = min(3, row["confidence"] + 1) if remembered else min(row["confidence"], 2)
     db.execute(
         "UPDATE topic_progress SET box = ?, due_on = ?, last_studied_on = ?, confidence = ?"
         " WHERE user_id = ? AND topic_key = ?",

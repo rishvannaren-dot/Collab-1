@@ -1,8 +1,10 @@
+import time
+
 from flask import Blueprint, abort, current_app, g, redirect, render_template, url_for
 
 from ..db import get_db
 from ..services import cards as cards_service
-from ..services import explore, plan, preferences, progress, topic_info
+from ..services import explore, plan, preferences, progress, source_health, topic_info
 from ..services import videos as videos_service
 from . import helpers
 from .auth import login_required
@@ -69,12 +71,14 @@ def interest(key):
         "strict": False,
         "tag": key,
     }
+    api_key = current_app.config.get("YOUTUBE_API_KEY")
     found, _ = videos_service.resolve_section(
         section,
         db,
-        current_app.config.get("YOUTUBE_API_KEY"),
+        api_key,
         videos_service.curated_videos(),
         videos_service.allowed_channels(),
+        live=bool(api_key) and source_health.is_available(db, videos_service.SOURCE, time.time()),
     )
 
     return render_template(

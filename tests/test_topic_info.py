@@ -305,3 +305,21 @@ def test_cache_is_read_with_one_query(app):
         topic_info.lookup_many(db, searches, live=0, now=lambda: 1001)
         db.set_trace_callback(None)
     assert sum(1 for s in statements if s.startswith("SELECT key, fetched_at, payload FROM topic_info")) == 1
+
+
+
+def test_an_api_error_with_http_200_keeps_the_saved_summary(app):
+    old = 1_000_000
+    later = old + topic_info.CACHE_TTL_SECONDS + 10
+
+    def get(url, params=None, headers=None, timeout=None):
+        return FakeResponse(200, {"error": {"code": "internal_api_error_DBConnectionError"}})
+
+    with app.app_context():
+        db = get_db()
+        seed_cache(db, "Physics: Transformers", old)
+        result = topic_info.lookup_many(db, [search()], get=get, now=lambda: later)
+        assert result["Physics: Transformers"]["summary"] == "Saved summary."
+        payload = db.execute("SELECT payload FROM topic_info").fetchone()[0]
+        assert payload != "null"
+        assert topic_info.source_busy(db, later + 1)

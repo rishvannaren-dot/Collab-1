@@ -111,7 +111,7 @@ def test_review_and_rest_days(client, clock_at):
     clock_at(date(2026, 10, 25))  # day 6: Electrostatics has 5 topics, so this is review
     html = client.get("/").data.decode()
     assert "Chapter review" in html
-    assert "Close the book" in html
+    assert "Close the book." in html
     assert client.get("/videos").status_code == 200
 
     clock_at(date(2026, 10, 26))  # day 7

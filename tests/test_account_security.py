@@ -147,10 +147,68 @@ def test_changing_password_signs_out_other_devices(two_devices):
         "/account/password",
         data={"current": "longenough1", "password": "brandnewpass1", "confirm": "brandnewpass1"},
     )
-    assert response.headers["Location"] == "/account"
-    assert b"flash-success" in a.get("/account").data
+    assert response.status_code == 200
+    assert response.headers["Cache-Control"] == "no-store"
+    assert KEY_RE.search(response.data.decode())  # a fresh recovery key, shown once
     assert a.get("/").headers["Location"].endswith("/onboarding")  # still signed in
     assert b.get("/").headers["Location"].endswith("/welcome")
+
+
+def test_an_intruders_recovery_key_dies_with_a_password_change(app, two_devices):
+    a, intruder = two_devices
+    stolen = make_key(intruder)  # someone who knew the password made a key
+    a.post(
+        "/account/password",
+        data={"current": "longenough1", "password": "brandnewpass1", "confirm": "brandnewpass1"},
+    )
+    attempt = app.test_client()
+    assert b"don&#39;t match" in forgot(attempt, stolen, password="takeover123").data
+
+
+def test_sign_out_everywhere_turns_the_recovery_key_off(app, two_devices):
+    a, intruder = two_devices
+    stolen = make_key(intruder)
+    response = a.post("/account/sign-out-everywhere")
+    assert response.headers["Location"] == "/account/recovery-key"
+    assert b"don&#39;t match" in forgot(app.test_client(), stolen, password="takeover123").data
+
+
+def test_cli_set_password_turns_the_recovery_key_off(app, client):
+    register(client)
+    key = make_key(client)
+    app.test_cli_runner().invoke(args=["users", "set-password", "alice"], input="newpassword1\nnewpassword1\n")
+    assert b"don&#39;t match" in forgot(app.test_client(), key, password="takeover123").data
+
+
+def test_junk_usernames_are_stored_short(client, app):
+    login(client, "x" * 5000, "wrongpassword")
+    forgot(client, "AAAA-AAAA-AAAA-AAAA", username="y" * 5000)
+    with app.app_context():
+        lengths = [len(r[0]) for r in get_db().execute("SELECT username FROM login_failures")]
+    assert lengths and max(lengths) <= 70
+
+
+def test_signing_in_clears_reset_attempts(client, app):
+    register(client)
+    key = make_key(client)
+    client.post("/auth/logout")
+    forgot(client, "AAAA-AAAA-AAAA-AAAA")
+    login(client)
+    with app.app_context():
+        assert get_db().execute("SELECT COUNT(*) FROM login_failures").fetchone()[0] == 0
+
+
+def test_expired_failures_are_deleted_at_the_next_attempt(client, app):
+    register(client)
+    client.post("/auth/logout")
+    with app.app_context():
+        db = get_db()
+        db.execute("INSERT INTO login_failures (username, failed_at) VALUES ('old', 1000)")
+        db.commit()
+    login(client, "alice", "wrongpassword")
+    with app.app_context():
+        names = [r[0] for r in get_db().execute("SELECT username FROM login_failures")]
+    assert names == ["alice"]
 
 
 def test_reset_signs_out_other_devices(app, two_devices):
@@ -269,7 +327,9 @@ def test_new_forms_reject_missing_csrf_tokens(csrf_client):
     assert response.headers["Location"] == "/account/password"
     response = csrf_client.post("/account/sign-out-everywhere", data={"next": "/account"})
     assert response.headers["Location"] == "/account"
-    assert csrf_client.get("/account").status_code == 200  # still signed in
+    html = csrf_client.get("/account").data.decode()
+    assert "That form expired" in html  # rejected, not a real sign-out
+    assert "Signed out of every other device" not in html
     csrf_client.post("/auth/logout", data={"csrf_token": csrf_token(csrf_client, "/account")})
     response = csrf_client.post(
         "/auth/login",

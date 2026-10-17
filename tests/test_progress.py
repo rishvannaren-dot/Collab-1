@@ -172,7 +172,7 @@ def test_finish_panel_after_every_learn_card(client):
     make_student(client)
     mark(client, COULOMB, "3")
     mark(client, "chemistry/solutions/raoult-s-law", "3")
-    assert "That&#39;s everything for today" not in client.get("/").data.decode()
+    assert "That's everything for today" not in client.get("/").data.decode()
     mark(client, "maths/matrices-and-determinants/matrix-operations", "3")
     assert "That's everything for today" in client.get("/").data.decode()
 
@@ -213,3 +213,28 @@ def test_progress_page_counts_and_needs_work(client):
 def test_progress_for_general_goal(client):
     make_student(client, grade=9, goal="general", interests=("sports",))
     assert "No study plan yet" in client.get("/progress").data.decode()
+
+
+def test_finish_panel_waits_for_revision(client, clock_at):
+    make_student(client)
+    for key in (COULOMB, "chemistry/solutions/raoult-s-law", "maths/matrices-and-determinants/matrix-operations"):
+        mark(client, key, "1")  # Lost me: due tomorrow
+    clock_at(date(2026, 10, 21))
+    for key in (
+        "physics/electrostatics/electric-field-and-field-lines",
+        "chemistry/solutions/colligative-properties",
+        "maths/matrices-and-determinants/determinant-properties",
+    ):
+        mark(client, key, "3")
+    html = client.get("/").data.decode()
+    assert "Revise today" in html
+    assert "That's everything for today" not in html
+
+
+def test_finish_panel_waits_for_review_days(client, clock_at):
+    make_student(client)
+    clock_at(date(2026, 10, 24))  # day 5: Physics learns its 5th topic, the others review
+    mark(client, "physics/electrostatics/capacitors-and-capacitance", "3")
+    html = client.get("/").data.decode()
+    assert "Chapter review" in html
+    assert "That's everything for today" not in html

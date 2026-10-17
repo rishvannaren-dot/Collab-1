@@ -131,7 +131,7 @@ def test_resolve_section_without_key_uses_curated_only(app):
 
 def test_build_sections_covers_syllabus_and_other_interests():
     prefs = {"interests": ["science-tech", "sports"], "grade": 12, "goal": "jee"}
-    cards = [{"subject": "Physics", "chapter": "Electrostatics", "query": "Electrostatics q"}]
+    cards = [{"subject": "Physics", "subject_key": "physics", "slug": "electrostatics", "chapter": "Electrostatics", "query": "Electrostatics q"}]
     sections = videos.build_sections(prefs, cards)
     assert [s["title"] for s in sections] == ["Physics: Electrostatics", "Sports"]
     assert sections[0]["strict"] is True and sections[1]["strict"] is False
@@ -195,3 +195,63 @@ def test_cached_videos_are_used_without_live_search(app):
         seed_videos(db, "q", int(__import__("time").time()) - 3600)
         found, notice = videos.resolve_section(section, db, "key", [], [], live=False)
     assert [v["id"] for v in found] == ["saved"] and notice is None
+
+
+
+def test_a_cache_hit_does_not_lift_a_youtube_pause(app):
+    from focusfeed.services import source_health
+
+    section = {"title": "x", "query": "q", "strict": False, "tag": "sports"}
+    with app.app_context():
+        db = get_db()
+        seed_videos(db, "q", int(__import__("time").time()) - 60)  # fresh
+        source_health.record_failure(db, "youtube", __import__("time").time(), retry_after=3 * 3600, max_wait=3 * 3600)
+        videos.resolve_section(section, db, "key", [], [], get=lambda *a, **k: None)
+        assert not source_health.is_available(db, "youtube", __import__("time").time())
+
+
+def test_backoff_keeps_growing_past_cached_sections(app):
+    from focusfeed.services import source_health
+
+    now = __import__("time").time()
+    with app.app_context():
+        db = get_db()
+        db.execute("INSERT INTO source_status (source, unavailable_until, failures) VALUES ('youtube', 0, 3)")
+        db.commit()
+        seed_videos(db, "cached", int(now) - 60)
+        cached = {"title": "a", "query": "cached", "strict": False, "tag": "a"}
+        failing = {"title": "b", "query": "fails", "strict": False, "tag": "b"}
+
+        def get(url, params=None, timeout=None):
+            return FakeResponse(500, {})
+
+        videos.resolve_section(cached, db, "key", [], [], get=get)
+        videos.resolve_section(failing, db, "key", [], [], get=get)
+        row = db.execute("SELECT failures FROM source_status WHERE source = 'youtube'").fetchone()
+    assert row[0] == 4
+
+
+def test_topic_pages_respect_a_youtube_pause(client, app, monkeypatch):
+    from focusfeed.services import source_health
+    from tests.helpers import make_student
+
+    app.config["YOUTUBE_API_KEY"] = "key"
+    make_student(client)
+    calls = []
+    monkeypatch.setattr(videos, "search_youtube", lambda *a, **k: calls.append(a) or [])
+    with app.app_context():
+        source_health.record_failure(get_db(), "youtube", __import__("time").time(), retry_after=600)
+    assert client.get("/topics/sports").status_code == 200
+    assert calls == []
+
+
+def test_same_named_chapters_get_different_anchors(client):
+    from tests.helpers import make_student
+
+    make_student(client, grade=11, goal="boards", interests=("sports",))
+    client.post("/study/physics/thermodynamics/start")
+    client.post("/study/chemistry/thermodynamics/start")
+    html = client.get("/videos").data.decode()
+    assert 'id="physics-thermodynamics"' in html and 'id="chemistry-thermodynamics"' in html
+    today = client.get("/").data.decode()
+    assert 'href="/videos#physics-thermodynamics"' in today

@@ -31,7 +31,7 @@
                 {% else %}
                   <form method="post" action="{{ url_for('study.start', subject_key=subject.key, slug=chapter.slug) }}" class="inline-form">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-ghost btn-small" aria-label="Study {{ chapter.name }} this week">Study this week</button>
+                    <button type="submit" class="btn btn-ghost btn-small" aria-label="Study this week: {{ chapter.name }}">Study this week</button>
                   </form>
                 {% endif %}
               </article>

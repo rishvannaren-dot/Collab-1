@@ -127,10 +127,13 @@ def needs_work(syllabus, studied, subject_keys, grade, limit=10):
     return items[:limit]
 
 
-def day_finished(cards, studied, today):
-    """True when there was something to learn today and every one is marked today."""
+def day_finished(cards, studied, today, revise_due=()):
+    """True when there was something to learn today, every one is marked today, and
+    nothing else is waiting: no revision due and no review or practice day open."""
     learn = [card for card in cards if card["kind"] == "learn"]
-    if not learn:
+    if not learn or revise_due:
+        return False
+    if any(card["kind"] in ("review", "practice") for card in cards):
         return False
     today_iso = today.isoformat()
     return all(

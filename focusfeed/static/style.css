@@ -909,6 +909,10 @@ input::placeholder {
   border-top: 1px solid var(--border);
 }
 
+.settings form {
+  margin: 0;
+}
+
 .setting {
   display: flex;
   align-items: center;
@@ -1662,12 +1666,17 @@ progress.bar::-moz-progress-bar {
   border: 1.5px solid var(--muted);
 }
 
+/* Shapes as well as colours, so the three answers differ without colour vision:
+   Got it is a full circle, Shaky a half-filled circle, Lost me a diamond. */
 .dot-1 {
+  border-radius: 2px;
   background: var(--bad);
+  transform: rotate(45deg) scale(0.85);
 }
 
 .dot-2 {
-  background: var(--warn);
+  border: 1.5px solid var(--warn);
+  background: linear-gradient(90deg, var(--warn) 50%, transparent 50%);
 }
 
 .dot-3 {

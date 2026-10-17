@@ -1,3 +1,4 @@
+import re
 from datetime import date, timedelta
 
 import pytest
@@ -110,9 +111,40 @@ def test_remembering_and_forgetting(client, app, clock_at):
     assert review(client, "1").headers["Location"] == "/#revise"
     row = due_row(app)
     assert (row["box"], row["due_on"]) == (2, "2026-10-30")
+    clock_at(date(2026, 10, 30))
     review(client, "0")
     row = due_row(app)
-    assert (row["box"], row["due_on"], row["confidence"]) == (0, "2026-10-24", 2)
+    assert (row["box"], row["due_on"], row["confidence"]) == (0, "2026-10-31", 2)
+
+
+def test_a_double_tap_counts_once(client, app, clock_at):
+    make_student(client)
+    mark(client)
+    clock_at(date(2026, 10, 23))
+    review(client, "1")
+    review(client, "1")
+    row = due_row(app)
+    assert (row["box"], row["due_on"]) == (2, "2026-10-30")
+
+
+def test_reviewing_before_it_is_due_changes_nothing(client, app):
+    make_student(client)
+    mark(client)
+    before = due_row(app)
+    assert review(client, "1").headers["Location"] == "/#revise"
+    assert due_row(app) == before
+
+
+def test_remembering_raises_confidence(client, app, clock_at):
+    make_student(client)
+    mark(client, confidence="1")  # Lost me, due tomorrow
+    clock_at(date(2026, 10, 21))
+    review(client, "1")
+    assert due_row(app)["confidence"] == 2
+    clock_at(date(2026, 10, 24))
+    review(client, "1")
+    assert due_row(app)["confidence"] == 3
+    assert "Needs work" not in client.get("/progress").data.decode()
 
 
 def test_review_only_for_your_own_studied_topics(client, app):
@@ -152,7 +184,8 @@ def test_at_most_five_and_no_backlog_number(client, app, clock_at):
     revise = html[html.index('id="revise"'):html.index("From your topics")]
     assert revise.count('name="remembered" value="1"') == 5
     assert "More come back on later days." in revise
-    assert "7" not in revise.split("More come back")[1][:20]
+    text = re.sub(r"<[^>]+>", " ", revise)
+    assert not re.search(r"\b\d+\s+(more|left|waiting|overdue|due)\b", text, re.I)  # no backlog count
 
 
 def test_revise_summaries_come_from_the_cache_only(client, app, clock_at, monkeypatch):
@@ -182,7 +215,9 @@ def test_review_day_shows_recall_prompts(client, clock_at):
     clock_at(date(2026, 10, 25))
     html = client.get("/").data.decode()
     assert "Chapter review" in html
-    assert "Coulomb&#39;s law" in html and ("Write the law" in html or "Explain Coulomb" in html)
+    assert "Coulomb&#39;s law" in html
+    assert "Close the book. Write the law or formula for each topic" in html or "Close the book. Explain each topic" in html
+    assert html.count("for each topic") + html.count("Explain each topic") == 1  # said once, not per topic
 
 
 def test_chapter_page_shows_next_review(client):

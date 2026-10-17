@@ -23,7 +23,7 @@ bp = Blueprint("account", __name__, url_prefix="/account")
 def password_ok(db, password):
     """Check the signed-in user's password. Wrong guesses count as failed sign-ins,
     so someone who finds an unlocked device can't keep guessing here either."""
-    lock = g.user["username"].lower()
+    lock = g.user["username"].lower()[:64]
     now = int(time.time())
     if login_limits.is_locked(db, lock, now):
         flash(f"Too many wrong passwords. Try again in {lock_minutes()} minutes.", "error")
@@ -61,10 +61,16 @@ def password():
         if error is not None:
             flash(error, "error")
         elif password_ok(db, request.form.get("current", "")):
-            # This device stays signed in; every other one is signed out.
+            # This device stays signed in; every other one is signed out. A recovery
+            # key someone else may have made stops working too: here is a new one.
             session["sv"] = account.set_password(db, g.user["id"], new)
-            flash("Password changed. Your other devices are signed out.", "success")
-            return redirect(url_for("account.index"))
+            key = recovery.set_key(db, g.user["id"], time.time())
+            return render_new_key(
+                key,
+                "Your password is changed and your other devices are signed out. "
+                "Your old recovery key no longer works, so here is a new one.",
+                url_for("account.index"),
+            )
     return render_template("account/password.html")
 
 
@@ -94,7 +100,14 @@ def recovery_key():
 @bp.route("/sign-out-everywhere", methods=("POST",))
 @login_required
 def sign_out_everywhere():
-    session["sv"] = account.bump_session(get_db(), g.user["id"])
+    db = get_db()
+    session["sv"] = account.bump_session(db, g.user["id"])
+    # Someone with access might have made a recovery key; turn it off too.
+    had_key = recovery.key_created_at(db, g.user["id"]) is not None
+    recovery.remove_key(db, g.user["id"])
+    if had_key:
+        flash("Signed out of every other device, and your old recovery key is off. Make a new one.", "success")
+        return redirect(url_for("account.recovery_key"))
     flash("Signed out of every other device.", "success")
     return redirect(url_for("account.index"))
 

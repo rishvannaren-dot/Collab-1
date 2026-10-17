@@ -25,6 +25,17 @@ def test_export_requires_login(client):
     assert client.get("/account/export").headers["Location"].endswith("/welcome")
 
 
+def test_export_holds_only_your_own_rows(client, app):
+    make_student(client)
+    client.post("/study/mark", data={"topic_key": "physics/electrostatics/coulomb-s-law", "confidence": "2", "next": "/"})
+    bob = app.test_client()
+    make_student(bob, "bob", interests=("music",))
+    bob.post("/study/mark", data={"topic_key": "physics/electrostatics/gauss-s-law", "confidence": "3", "next": "/"})
+    data = json.loads(client.get("/account/export").data)
+    assert [r["topic_key"] for r in data["topic_progress"]] == ["physics/electrostatics/coulomb-s-law"]
+    assert "bob" not in json.dumps(data) and "music" not in data["preferences"]["interests"]
+
+
 def test_export_has_your_data_and_no_secrets(client):
     make_student(client)
     client.post("/account/recovery-key", data={"current": "longenough1"})
@@ -56,7 +67,13 @@ def test_delete_needs_the_password_and_the_username(client, app):
 def test_delete_removes_everything_and_signs_you_out(client, app):
     make_student(client)
     client.post("/account/recovery-key", data={"current": "longenough1"})
-    register(app.test_client(), "bob")
+    client.post("/study/mark", data={"topic_key": "physics/electrostatics/coulomb-s-law", "confidence": "2", "next": "/"})
+    bob = app.test_client()
+    make_student(bob, "bob")
+    bob.post("/account/recovery-key", data={"current": "longenough1"})
+    bob.post("/study/mark", data={"topic_key": "physics/electrostatics/gauss-s-law", "confidence": "3", "next": "/"})
+    bob_before = rows_for(app, 2)
+    assert all(bob_before[t] > 0 for t in account.USER_TABLES)
     login(app.test_client(), "alice", "wrongpassword")  # a failed sign-in row for alice
 
     response = delete(client, confirm="ALICE")
@@ -64,8 +81,13 @@ def test_delete_removes_everything_and_signs_you_out(client, app):
     assert b"were deleted" in client.get("/welcome").data
     assert client.get("/").headers["Location"].endswith("/welcome")
 
-    assert all(count == 0 for count in rows_for(app, 1).values())
-    assert rows_for(app, 2)["users"] == 1  # bob is untouched
+    alice_after = rows_for(app, 1)
+    assert all(alice_after[t] == 0 for t in account.USER_TABLES + ["users"])
+    assert alice_after["login_failures"] == 0
+    bob_after = rows_for(app, 2)
+    assert {t: bob_after[t] for t in account.USER_TABLES + ["users"]} == {
+        t: bob_before[t] for t in account.USER_TABLES + ["users"]
+    }  # bob is untouched
     assert b"Incorrect" in login(client).data
     assert register(client).headers["Location"] == "/account/recovery-key"  # name is free again
 
