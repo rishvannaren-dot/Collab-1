@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Focus Feed
 
 A Python web app that shows only the content you choose: study cards and curated videos based on your interests, grade, and goals, instead of an endless feed.
@@ -18,3 +19,7 @@ Then open http://127.0.0.1:5000.
 - Login and onboarding (interests, grade, goal)
 - Study cards generated from the syllabus
 - Curated educational videos
+=======
+# Collab-1
+This a collaborative repository to test.
+>>>>>>> 3403aacc2f5eb93d451987ba07a6e197c6667728
