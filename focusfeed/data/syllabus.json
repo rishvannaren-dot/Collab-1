@@ -11,7 +11,8 @@
         {"name": "Electrostatics", "grade": 12, "topics": ["Coulomb's law", "Electric field and field lines", "Gauss's law", "Electric potential", "Capacitors and capacitance"]},
         {"name": "Current Electricity", "grade": 12, "topics": ["Ohm's law and resistivity", "Kirchhoff's laws", "Wheatstone bridge", "Potentiometer"]},
         {"name": "Magnetic Effects of Current", "grade": 12, "topics": ["Biot-Savart law", "Ampere's law", "Force on a moving charge", "Moving coil galvanometer"]},
-        {"name": "Electromagnetic Induction", "grade": 12, "topics": ["Faraday's law", "Lenz's law", "Self and mutual inductance", "AC circuits"]},
+        {"name": "Electromagnetic Induction", "grade": 12, "topics": ["Faraday's law", "Lenz's law", "Motional EMF", "Self and mutual inductance"]},
+        {"name": "Alternating Current", "grade": 12, "topics": ["AC voltage and phasors", "Series LCR circuit", "Resonance and power factor", "Transformers"]},
         {"name": "Ray Optics", "grade": 12, "topics": ["Reflection and mirrors", "Refraction and lenses", "Total internal reflection", "Optical instruments"]},
         {"name": "Wave Optics", "grade": 12, "topics": ["Huygens' principle", "Interference", "Diffraction", "Polarisation"]}
       ]
@@ -34,11 +35,11 @@
       "label": "Maths",
       "chapters": [
         {"name": "Sets and Functions", "grade": 11, "topics": ["Set operations", "Relations", "Types of functions", "Domain and range"]},
-        {"name": "Trigonometric Functions", "grade": 11, "topics": ["Radian measure", "Identities", "Trigonometric equations", "Inverse functions"]},
+        {"name": "Trigonometric Functions", "grade": 11, "topics": ["Radian measure", "Identities", "Sum and difference formulae", "Trigonometric equations"]},
         {"name": "Permutations and Combinations", "grade": 11, "topics": ["Fundamental principle of counting", "Permutations", "Combinations", "Arrangements with repetition"]},
         {"name": "Straight Lines", "grade": 11, "topics": ["Slope and equations of a line", "Angle between lines", "Distance from a point", "Family of lines"]},
         {"name": "Matrices and Determinants", "grade": 12, "topics": ["Matrix operations", "Determinant properties", "Inverse of a matrix", "Solving linear systems"]},
-        {"name": "Continuity and Differentiability", "grade": 12, "topics": ["Limits and continuity", "Chain rule", "Implicit differentiation", "Mean value theorems"]},
+        {"name": "Continuity and Differentiability", "grade": 12, "topics": ["Continuity", "Chain rule", "Implicit differentiation", "Mean value theorems"]},
         {"name": "Integrals", "grade": 12, "topics": ["Indefinite integrals", "Substitution", "Integration by parts", "Definite integrals"]},
         {"name": "Application of Derivatives", "grade": 12, "topics": ["Rate of change", "Increasing and decreasing functions", "Maxima and minima", "Tangents and normals"]},
         {"name": "Probability", "grade": 12, "topics": ["Conditional probability", "Bayes' theorem", "Random variables", "Binomial distribution"]}
