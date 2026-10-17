@@ -6,6 +6,8 @@ from urllib.parse import quote_plus
 
 import requests
 
+from . import source_health
+
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
@@ -14,7 +16,10 @@ VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos"
 MIN_SECONDS = 240  # drops Shorts and clips
 MAX_SECONDS = 3 * 3600
 MIN_VIEWS = 1000
+SOURCE = "youtube"
 CACHE_TTL_SECONDS = 6 * 3600
+STALE_MAX_SECONDS = 7 * 24 * 3600  # older saved results still shown when YouTube fails
+QUOTA_PAUSE_SECONDS = 3 * 3600  # after "daily quota used up", don't ask again for a while
 MAX_LIVE_SEARCHES = 6  # each search costs ~101 of the 10,000 daily quota units
 VIDEOS_PER_SECTION = 6
 
@@ -33,6 +38,19 @@ INTEREST_QUERIES = {
 
 class VideoSourceError(Exception):
     """A problem talking to YouTube, worded so it can be shown to the user."""
+
+    def __init__(self, message, retry_after=None, max_wait=source_health.MAX_BACKOFF_SECONDS):
+        super().__init__(message)
+        self.retry_after = retry_after
+        self.max_wait = max_wait
+
+
+class StaleVideos(VideoSourceError):
+    """YouTube failed, but a saved result (up to STALE_MAX_SECONDS old) is available."""
+
+    def __init__(self, error, videos):
+        super().__init__(str(error), error.retry_after, error.max_wait)
+        self.videos = videos
 
 
 def load_json(name):
@@ -92,15 +110,23 @@ def filter_videos(videos, allow=None):
 
 
 def _error_for(response):
+    """A VideoSourceError for a failed response (the page adds what it shows instead)."""
     try:
         reason = response.json()["error"]["errors"][0]["reason"]
     except (ValueError, KeyError, IndexError, TypeError):
         reason = ""
-    if reason in ("quotaExceeded", "dailyLimitExceeded", "rateLimitExceeded"):
-        return "Today's YouTube search limit is used up. Showing saved picks instead."
+    retry_after = source_health.retry_after_seconds(response)
+    if reason in ("quotaExceeded", "dailyLimitExceeded"):
+        return VideoSourceError(
+            "Today's YouTube search limit is used up.",
+            retry_after=QUOTA_PAUSE_SECONDS,
+            max_wait=QUOTA_PAUSE_SECONDS,
+        )
+    if reason == "rateLimitExceeded":
+        return VideoSourceError("YouTube asked us to slow down.", retry_after=retry_after)
     if response.status_code in (400, 403):
-        return "YouTube rejected the API key. Check YOUTUBE_API_KEY. Showing saved picks instead."
-    return "YouTube search failed. Showing saved picks instead."
+        return VideoSourceError("YouTube rejected the API key. Check YOUTUBE_API_KEY.")
+    return VideoSourceError("YouTube search failed.", retry_after=retry_after)
 
 
 def search_youtube(api_key, query, get=requests.get, max_results=15):
@@ -120,7 +146,7 @@ def search_youtube(api_key, query, get=requests.get, max_results=15):
             timeout=10,
         )
         if response.status_code != 200:
-            raise VideoSourceError(_error_for(response))
+            raise _error_for(response)
         items = response.json().get("items", [])
         ids = [item["id"]["videoId"] for item in items if "videoId" in item.get("id", {})]
         if not ids:
@@ -132,10 +158,10 @@ def search_youtube(api_key, query, get=requests.get, max_results=15):
             timeout=10,
         )
         if details_response.status_code != 200:
-            raise VideoSourceError(_error_for(details_response))
+            raise _error_for(details_response)
         details = {d["id"]: d for d in details_response.json().get("items", [])}
     except requests.RequestException:
-        raise VideoSourceError("Couldn't reach YouTube. Showing saved picks instead.")
+        raise VideoSourceError("Couldn't reach YouTube.")
 
     videos = []
     for item in items:
@@ -155,20 +181,38 @@ def search_youtube(api_key, query, get=requests.get, max_results=15):
     return videos
 
 
-def search_cached(db, api_key, query, get=requests.get, now=time.time):
-    """Like search_youtube, but reuses a saved result for CACHE_TTL_SECONDS."""
+def read_cache(db, query, now, max_age):
+    """Saved videos for `query` if they are younger than `max_age` seconds, else None."""
     row = db.execute(
         "SELECT fetched_at, payload FROM video_cache WHERE query = ?", (query,)
     ).fetchone()
-    if row is not None and now() - row["fetched_at"] < CACHE_TTL_SECONDS:
-        return json.loads(row["payload"])
+    if row is None or now - row["fetched_at"] >= max_age:
+        return None
+    return json.loads(row["payload"])
 
-    videos = search_youtube(api_key, query, get=get)
+
+def search_cached(db, api_key, query, get=requests.get, now=time.time):
+    """Like search_youtube, but reuses a saved result for CACHE_TTL_SECONDS.
+
+    If YouTube fails and an older saved result exists, raises StaleVideos
+    carrying it, so the page can still show something.
+    """
+    current = now()
+    fresh = read_cache(db, query, current, CACHE_TTL_SECONDS)
+    if fresh is not None:
+        return fresh
+    try:
+        videos = search_youtube(api_key, query, get=get)
+    except VideoSourceError as error:
+        saved = read_cache(db, query, current, STALE_MAX_SECONDS)
+        if saved is not None:
+            raise StaleVideos(error, saved) from error
+        raise
     db.execute(
         "INSERT INTO video_cache (query, fetched_at, payload) VALUES (?, ?, ?) "
         "ON CONFLICT(query) DO UPDATE SET fetched_at = excluded.fetched_at, "
         "payload = excluded.payload",
-        (query, int(now()), json.dumps(videos)),
+        (query, int(current), json.dumps(videos)),
     )
     db.commit()
     return videos
@@ -204,8 +248,10 @@ def build_sections(prefs, cards):
 def resolve_section(section, db, api_key, curated, allow, get=requests.get, live=True):
     """Return (videos, notice) for one section.
 
-    Tries live search first when an API key is set and `live` is true; falls back
-    to the hand-picked list. `notice` explains a live-search failure, else None.
+    With an API key and `live`, searches YouTube (through the cache). Without
+    `live`, only saved results are used. Falls back to the hand-picked list.
+    `notice` explains a live-search failure, else None. Failures pause YouTube
+    for a while (services/source_health.py) and successes clear the pause.
     """
     allowlist = allow if section["strict"] else None
     videos = []
@@ -214,8 +260,18 @@ def resolve_section(section, db, api_key, curated, allow, get=requests.get, live
     if api_key and live:
         try:
             videos = filter_videos(search_cached(db, api_key, section["query"], get=get), allowlist)
+            source_health.record_success(db, SOURCE)
+        except StaleVideos as error:
+            videos = filter_videos(error.videos, allowlist)
+            notice = f"{error} Showing videos saved earlier."
+            source_health.record_failure(db, SOURCE, time.time(), error.retry_after, error.max_wait)
         except VideoSourceError as error:
-            notice = str(error)
+            notice = f"{error} Showing saved picks instead."
+            source_health.record_failure(db, SOURCE, time.time(), error.retry_after, error.max_wait)
+    elif api_key:
+        saved = read_cache(db, section["query"], time.time(), STALE_MAX_SECONDS)
+        if saved:
+            videos = filter_videos(saved, allowlist)
 
     if not videos:
         # Hand-picked videos are trusted, so they skip the length/view/channel filters.

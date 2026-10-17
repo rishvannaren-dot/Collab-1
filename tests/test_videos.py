@@ -135,3 +135,63 @@ def test_build_sections_covers_syllabus_and_other_interests():
     sections = videos.build_sections(prefs, cards)
     assert [s["title"] for s in sections] == ["Physics: Electrostatics", "Sports"]
     assert sections[0]["strict"] is True and sections[1]["strict"] is False
+
+
+# Resilience
+
+
+QUOTA = {"error": {"errors": [{"reason": "quotaExceeded"}]}}
+
+
+def seed_videos(db, query, fetched_at):
+    import json
+
+    db.execute(
+        "INSERT INTO video_cache (query, fetched_at, payload) VALUES (?, ?, ?)",
+        (query, fetched_at, json.dumps([video(id="saved")])),
+    )
+    db.commit()
+
+
+def test_saved_videos_are_shown_when_youtube_fails(app):
+    def get(url, params=None, timeout=None):
+        return FakeResponse(403, QUOTA)
+
+    section = {"title": "x", "query": "q", "strict": False, "tag": "sports"}
+    with app.app_context():
+        db = get_db()
+        seed_videos(db, "q", int(__import__("time").time()) - videos.CACHE_TTL_SECONDS - 60)
+        found, notice = videos.resolve_section(section, db, "key", [], [], get=get)
+        assert [v["id"] for v in found] == ["saved"]
+        assert "Showing videos saved earlier." in notice
+        row = db.execute("SELECT unavailable_until FROM source_status WHERE source = 'youtube'").fetchone()
+        assert row[0] - __import__("time").time() > 3 * 3600 - 60  # quota pauses for 3 hours
+
+
+def test_one_failure_stops_live_search_for_the_rest_of_the_page(client, app, monkeypatch):
+    from tests.helpers import make_student
+
+    app.config["YOUTUBE_API_KEY"] = "key"
+    make_student(client)
+    calls = []
+
+    def failing_search(api_key, query, get=None, max_results=15):
+        calls.append(query)
+        raise videos.VideoSourceError("YouTube search failed.")
+
+    monkeypatch.setattr(videos, "search_youtube", failing_search)
+    assert client.get("/videos").status_code == 200
+    assert len(calls) == 1  # the first section failed; no more calls on this page
+    calls.clear()
+    html = client.get("/videos").data.decode()
+    assert calls == []  # YouTube is paused now
+    assert "paused for a while" in html
+
+
+def test_cached_videos_are_used_without_live_search(app):
+    section = {"title": "x", "query": "q", "strict": False, "tag": "sports"}
+    with app.app_context():
+        db = get_db()
+        seed_videos(db, "q", int(__import__("time").time()) - 3600)
+        found, notice = videos.resolve_section(section, db, "key", [], [], live=False)
+    assert [v["id"] for v in found] == ["saved"] and notice is None

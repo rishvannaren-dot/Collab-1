@@ -1,3 +1,7 @@
+import json
+import threading
+import time
+
 import pytest
 import requests
 
@@ -6,9 +10,10 @@ from focusfeed.services import cards, explore, preferences, topic_info
 
 
 class FakeResponse:
-    def __init__(self, status_code=200, payload=None):
+    def __init__(self, status_code=200, payload=None, headers=None):
         self.status_code = status_code
         self._payload = payload or {}
+        self.headers = headers or {}
 
     def json(self):
         return self._payload
@@ -147,9 +152,13 @@ def test_lookup_does_not_cache_failures(app):
 
     with app.app_context():
         db = get_db()
-        assert topic_info.lookup_many(db, [search()], get=failing) == {"Physics: Transformers": None}
+        result = topic_info.lookup_many(db, [search()], get=failing, now=lambda: 1000)
+        assert result == {"Physics: Transformers": None}
         calls = []
-        topic_info.lookup_many(db, [search()], get=fake_get(lambda p: page("Transformer"), calls))
+        good = fake_get(lambda p: page("Transformer"), calls)
+        topic_info.lookup_many(db, [search()], get=good, now=lambda: 1030)
+        assert calls == []  # Wikipedia is paused for a minute after a failure
+        topic_info.lookup_many(db, [search()], get=good, now=lambda: 1061)
         assert len(calls) == 1  # tried again
 
 
@@ -193,3 +202,106 @@ def test_every_interest_has_topics_to_explore():
     topics = explore.load_interest_topics()
     assert set(topics) == set(preferences.INTERESTS)
     assert all(len(articles) >= 4 for articles in topics.values())
+
+
+# Resilience
+
+
+def failing_get(status=503, headers=None, calls=None):
+    def get(url, params=None, headers_=None, timeout=None, **kwargs):
+        if calls is not None:
+            calls.append(params)
+        return FakeResponse(status, headers=headers)
+
+    return get
+
+
+def seed_cache(db, key, fetched_at, title="Transformer"):
+    payload = json.dumps({"title": title, "summary": "Saved summary.", "url": "https://en.wikipedia.org/wiki/x"})
+    db.execute("INSERT INTO topic_info (key, fetched_at, payload) VALUES (?, ?, ?)", (key, fetched_at, payload))
+    db.commit()
+
+
+def test_an_expired_summary_is_kept_when_wikipedia_fails(app):
+    old = 1_000_000
+    later = old + topic_info.CACHE_TTL_SECONDS + 10
+    with app.app_context():
+        db = get_db()
+        seed_cache(db, "Physics: Transformers", old)
+        result = topic_info.lookup_many(db, [search()], get=failing_get(), now=lambda: later)
+        assert result["Physics: Transformers"]["summary"] == "Saved summary."
+        assert result["Physics: Transformers"]["checked_on"] == "1970-01-12"
+        row = db.execute("SELECT fetched_at FROM topic_info").fetchone()
+        assert row[0] == old  # not overwritten
+
+
+def test_very_old_summaries_are_dropped(app):
+    old = 1_000_000
+    with app.app_context():
+        db = get_db()
+        seed_cache(db, "Physics: Transformers", old)
+        later = old + topic_info.STALE_MAX_SECONDS + 10
+        assert topic_info.lookup_many(db, [search()], get=failing_get(), now=lambda: later) == {"Physics: Transformers": None}
+
+
+def test_retry_after_is_respected(app):
+    calls = []
+    with app.app_context():
+        db = get_db()
+        topic_info.lookup_many(db, [search()], get=failing_get(429, {"Retry-After": "120"}), now=lambda: 1000)
+        row = db.execute("SELECT unavailable_until FROM source_status WHERE source = 'wikipedia'").fetchone()
+        assert row[0] == 1120
+        good = fake_get(lambda p: page("Transformer"), calls)
+        topic_info.lookup_many(db, [search()], get=good, now=lambda: 1060)
+        assert calls == []
+        topic_info.lookup_many(db, [search()], get=good, now=lambda: 1121)
+        assert len(calls) == 1
+        assert topic_info.source_busy(db, 1122) is False  # success clears the pause
+
+
+def test_one_failure_stops_the_batch(app):
+    calls = []
+    searches = [search(key=f"k{n}", title=None, query=f"q{n}") for n in range(10)]
+    with app.app_context():
+        topic_info.lookup_many(get_db(), searches, get=failing_get(calls=calls), live=10, now=lambda: 1000)
+    assert len(calls) <= topic_info.MAX_WORKERS
+
+
+def test_slow_wikipedia_never_holds_the_page(app):
+    release = threading.Event()
+
+    def slow_get(url, params=None, headers=None, timeout=None):
+        release.wait(5)
+        return FakeResponse(payload=page("Transformer"))
+
+    with app.app_context():
+        db = get_db()
+        started = time.monotonic()
+        result = topic_info.lookup_many(db, [search()], get=slow_get, budget=0.2, now=lambda: 1000)
+        elapsed = time.monotonic() - started
+        assert elapsed < 1
+        assert result == {"Physics: Transformers": None}
+        assert db.execute("SELECT COUNT(*) FROM topic_info").fetchone()[0] == 0
+        assert topic_info.source_busy(db, 1001)  # a timeout pauses Wikipedia too
+    release.set()
+
+
+def test_results_carry_the_checked_date(app):
+    with app.app_context():
+        result = topic_info.lookup_many(
+            get_db(), [search()], get=fake_get(lambda p: page("Transformer")), now=lambda: 1_760_000_000
+        )
+    assert result["Physics: Transformers"]["checked_on"] == "2025-10-09"
+
+
+def test_cache_is_read_with_one_query(app):
+    statements = []
+    searches = [search(key=f"k{n}") for n in range(6)]
+    with app.app_context():
+        db = get_db()
+        for s in searches:
+            seed_cache(db, s["key"], 1000)
+        db.set_trace_callback(statements.append)
+        topic_info.lookup_many(db, searches, live=0, now=lambda: 1001)
+        db.set_trace_callback(None)
+    assert sum(1 for s in statements if s.startswith("SELECT key, fetched_at, payload FROM topic_info")) == 1

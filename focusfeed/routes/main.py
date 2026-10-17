@@ -70,7 +70,7 @@ def index():
         card["search"] = topic_info.syllabus_search(card["topic"], card["subject"], titles)
     for pick in picks:
         pick["search"] = topic_info.interest_search(pick["article"], pick["label"])
-    attach_info(learn_cards + picks)
+    wiki_notice = attach_info(learn_cards + picks)
     # Revision summaries come from the cache only, so they never slow Today down
     # or use up the live lookups.
     for item in revise:
@@ -91,6 +91,7 @@ def index():
         finished=progress.day_finished(cards, studied, today),
         revise=revise,
         revise_more=revise_more,
+        wiki_notice=wiki_notice,
     )
 
 

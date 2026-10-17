@@ -15,6 +15,8 @@
     </div>
   </header>
 
+  {% if wiki_notice %}<p class="notice">{{ wiki_notice }}</p>{% endif %}
+
   {% if this_week %}
     <p class="plan-state"><span class="badge">This week's chapter · Day {{ this_week.day }} of 7</span></p>
   {% elif can_start %}
@@ -44,7 +46,7 @@
         {% endif %}
         {{ mark_form(item.key, item.name, item.studied, request.path ~ '#' ~ item.anchor, today) }}
         <p class="card-links">
-          {% if item.info %}<a class="link" href="{{ item.info.url }}" target="_blank" rel="noopener noreferrer">Read on Wikipedia{{ ui.ext() }}</a>{% endif %}
+          {% if item.info %}<a class="link" href="{{ item.info.url }}" target="_blank" rel="noopener noreferrer">Read on Wikipedia{{ ui.ext() }}</a>{% if item.info.checked_on %}<span class="checked">checked {{ item.info.checked_on | short_date }}</span>{% endif %}{% endif %}
           <a class="link" href="{{ item.video_link }}" target="_blank" rel="noopener noreferrer">Videos on YouTube{{ ui.ext() }}</a>
         </p>
       </article>

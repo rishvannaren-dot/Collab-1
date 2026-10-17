@@ -51,6 +51,15 @@ MIGRATIONS = [
             "CREATE INDEX topic_progress_due ON topic_progress (user_id, due_on)",
         ],
     ),
+    (
+        5,  # when to try Wikipedia or YouTube again after they fail (not personal data)
+        [
+            "CREATE TABLE source_status ("
+            " source TEXT PRIMARY KEY,"
+            " unavailable_until INTEGER NOT NULL DEFAULT 0,"
+            " failures INTEGER NOT NULL DEFAULT 0)",
+        ],
+    ),
 ]
 
 

@@ -15,11 +15,26 @@ def live_lookups():
     return topic_info.MAX_LIVE_LOOKUPS if current_app.config["TOPIC_INFO_LIVE"] else 0
 
 
+WIKI_BUSY = "Wikipedia is busy right now, so some explanations are missing. Saved ones are shown."
+
+
 def attach_info(items):
-    """Look up every item's "search" and store the result in item["info"]."""
-    info = topic_info.lookup_many(get_db(), [i["search"] for i in items], live=live_lookups())
+    """Look up every item's "search" and store the result in item["info"].
+
+    Returns a notice to show when Wikipedia is paused and something is missing.
+    """
+    db = get_db()
+    info = topic_info.lookup_many(
+        db,
+        [i["search"] for i in items],
+        live=live_lookups(),
+        budget=current_app.config["TOPIC_INFO_BUDGET_SECONDS"],
+    )
     for item in items:
         item["info"] = info.get(item["search"]["key"])
+    if any(item["info"] is None for item in items) and topic_info.source_busy(db):
+        return WIKI_BUSY
+    return None
 
 
 @bp.route("/topics/<key>")
@@ -46,7 +61,7 @@ def interest(key):
         for article in topics.get(key, [])
     ]
     items.sort(key=lambda item: not item["today"])  # today's pick first
-    attach_info(items)
+    wiki_notice = attach_info(items)
 
     section = {
         "title": label,
@@ -71,6 +86,7 @@ def interest(key):
         videos=found,
         search_link=videos_service.search_link(section["query"]),
         format_duration=videos_service.format_duration,
+        wiki_notice=wiki_notice,
     )
 
 
@@ -114,7 +130,7 @@ def chapter(subject_key, slug):
         }
         for topic in chapter["topics"]
     ]
-    attach_info(items)
+    wiki_notice = attach_info(items)
 
     return render_template(
         "chapter.html",
@@ -127,5 +143,6 @@ def chapter(subject_key, slug):
         can_start=can_start,
         done=sum(1 for item in items if item["studied"]),
         neighbours=cards_service.neighbours(syllabus, subject_key, slug, chapter["grade"]),
+        wiki_notice=wiki_notice,
         today=helpers.today(),
     )

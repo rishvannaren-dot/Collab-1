@@ -1303,6 +1303,11 @@ a.chip:hover {
   color: var(--accent-text);
 }
 
+.checked {
+  font-size: 13px;
+  color: var(--muted);
+}
+
 .badge {
   display: inline-block;
   margin-top: 6px;

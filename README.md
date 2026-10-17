@@ -37,7 +37,8 @@ Run the tests with `pytest`.
 - **Topic pages** (`/topics/<interest>`): everything to explore for one interest, plus videos. The followed topics in the sidebar link here.
 - **Explanations**: looked up on Wikipedia (Google's web search API is closed to new projects; most of Google's topic summaries come from Wikipedia anyway). No key is needed.
   - `focusfeed/data/wiki_titles.json` maps syllabus topics to the right article when the name alone would find the wrong one (for example "Transformers" to "Transformer"). Other topics are searched by name.
-  - Results are cached for 7 days, so each topic is looked up at most once a week. If Wikipedia can't be reached, cards say "No summary yet" and it tries again next visit.
+  - Results are cached for 7 days, so each topic is looked up at most once a week, and each explanation shows when it was checked.
+  - When Wikipedia fails, the last saved copy (up to 90 days old) is shown, and a page never waits more than 4 seconds (`TOPIC_INFO_BUDGET_SECONDS`). After a failure Wikipedia is left alone for 1 minute, then 2, 4 and so on up to an hour, or as long as its Retry-After header asks (`services/source_health.py`). YouTube gets the same treatment: saved videos up to 7 days old are shown, live search stops for the rest of the page after one failure, and a used-up daily quota pauses it for 3 hours.
 - **Videos page** (`/videos`): one section per topic.
   - Syllabus topics keep only videos from channels in `focusfeed/data/channels.json`.
   - Other interests only get the length and view filters.

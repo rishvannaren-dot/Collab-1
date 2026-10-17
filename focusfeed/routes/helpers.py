@@ -37,3 +37,12 @@ def format_date(value):
     elif isinstance(value, str):
         value = date.fromisoformat(value[:10])
     return f"{value.day} {value.strftime('%b %Y')}"
+
+
+def short_date(value):
+    """"12 Oct" from an ISO date string or a date; "" for None."""
+    if not value:
+        return ""
+    if isinstance(value, str):
+        value = date.fromisoformat(value[:10])
+    return f"{value.day} {value.strftime('%b')}"

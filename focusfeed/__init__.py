@@ -8,7 +8,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from . import cli, db, security
 from .routes import account, auth, browse, main, onboarding, study, topics, videos
-from .routes.helpers import format_date, safe_next
+from .routes.helpers import format_date, safe_next, short_date
 from .services import cards, preferences
 
 csrf = CSRFProtect()
@@ -61,6 +61,7 @@ def create_app(test_config=None):
         DATABASE=os.path.join(app.instance_path, "focusfeed.db"),
         YOUTUBE_API_KEY=os.environ.get("YOUTUBE_API_KEY"),
         TOPIC_INFO_LIVE=True,  # look up topic summaries on Wikipedia
+        TOPIC_INFO_BUDGET_SECONDS=4,  # never keep a page waiting on Wikipedia longer
         APP_TIMEZONE="Asia/Kolkata",  # when "today" starts
         SESSION_COOKIE_SAMESITE="Lax",
         PERMANENT_SESSION_LIFETIME=timedelta(days=30),  # "Keep me signed in"
@@ -97,6 +98,7 @@ def create_app(test_config=None):
     app.register_blueprint(videos.bp)
     app.add_template_filter(cards.slugify, "slug")
     app.add_template_filter(format_date, "date")
+    app.add_template_filter(short_date, "short_date")
 
     @app.context_processor
     def inject_followed_topics():

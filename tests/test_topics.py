@@ -166,3 +166,26 @@ def test_today_fetches_and_caches_when_live(student, app, monkeypatch):
     assert count == len(todays_cards()) + 2  # three cards + two followed topics
     student.get("/")
     assert len(calls) == count  # second visit served from the cache
+
+
+def test_saved_summary_survives_an_outage(student, app, monkeypatch):
+    card = todays_cards()[0]
+    key = f"{card['subject']}: {card['topic']}"
+    old = int(time.time()) - topic_info.CACHE_TTL_SECONDS - 3600
+    with app.app_context():
+        db = get_db()
+        db.execute(
+            "INSERT INTO topic_info (key, fetched_at, payload) VALUES (?, ?, ?)",
+            (key, old, '{"title": "T", "summary": "An older saved summary.", "url": "https://en.wikipedia.org/wiki/T"}'),
+        )
+        db.commit()
+    app.config["TOPIC_INFO_LIVE"] = True
+
+    def failing(search, get=None):
+        raise topic_info.InfoSourceError("down", retry_after=600)
+
+    monkeypatch.setattr(topic_info, "fetch_summary", failing)
+    html = student.get("/").data.decode()
+    assert "An older saved summary." in html
+    assert "checked" in html
+    assert "Wikipedia is busy right now" in html

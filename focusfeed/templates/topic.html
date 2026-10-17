@@ -16,6 +16,8 @@
     <div class="page-head-action">{{ follow_form(key, label, following, request.path) }}</div>
   </header>
 
+  {% if wiki_notice %}<p class="notice">{{ wiki_notice }}</p>{% endif %}
+
   <div class="section-head">
     <h2 class="overline">Explore</h2>
     <span class="muted">{{ items | length }} topics</span>
@@ -28,7 +30,7 @@
           {% if item.today %}<span class="badge">Today's pick</span>{% endif %}
         </div>
         {% if item.info %}
-          <p class="summary">{{ item.info.summary }}</p>
+          <p class="summary">{{ item.info.summary }}{% if item.info.checked_on %} <span class="checked">· checked {{ item.info.checked_on | short_date }}</span>{% endif %}</p>
           <a class="row-link" href="{{ item.info.url }}" target="_blank" rel="noopener noreferrer">Read more on Wikipedia{{ ui.ext() }} {{ icons.icon('chevron', 16) }}</a>
         {% else %}
           <p class="muted small">No summary yet. It will appear once Wikipedia can be reached.</p>
