@@ -19,7 +19,7 @@
       {% else %}
         <p class="muted">No saved videos for this yet.</p>
       {% endif %}
-      <a class="row-link" href="{{ section.link }}" target="_blank" rel="noopener noreferrer">Search YouTube for this topic {{ icons.icon('chevron', 16) }}</a>
+      <a class="row-link" href="{{ section.link }}" target="_blank" rel="noopener noreferrer">Search YouTube for this topic{{ ui.ext() }} {{ icons.icon('chevron', 16) }}</a>
     </section>
   {% else %}
     <div class="empty">

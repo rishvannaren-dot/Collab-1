@@ -29,7 +29,7 @@
         </div>
         {% if item.info %}
           <p class="summary">{{ item.info.summary }}</p>
-          <a class="row-link" href="{{ item.info.url }}" target="_blank" rel="noopener noreferrer">Read more on Wikipedia {{ icons.icon('chevron', 16) }}</a>
+          <a class="row-link" href="{{ item.info.url }}" target="_blank" rel="noopener noreferrer">Read more on Wikipedia{{ ui.ext() }} {{ icons.icon('chevron', 16) }}</a>
         {% else %}
           <p class="muted small">No summary yet. It will appear once Wikipedia can be reached.</p>
         {% endif %}
@@ -44,6 +44,6 @@
     {% else %}
       <p class="muted">No saved videos for this yet.</p>
     {% endif %}
-    <a class="row-link" href="{{ search_link }}" target="_blank" rel="noopener noreferrer">Search YouTube for {{ label }} {{ icons.icon('chevron', 16) }}</a>
+    <a class="row-link" href="{{ search_link }}" target="_blank" rel="noopener noreferrer">Search YouTube for {{ label }}{{ ui.ext() }} {{ icons.icon('chevron', 16) }}</a>
   </section>
 {% endblock %}

@@ -10,6 +10,16 @@
       </div>
     </header>
 
+    <h2 class="overline">Preferences</h2>
+    <ul class="settings">
+      {% if prefs %}
+        <li><div class="setting setting-static"><span>Grade</span><span class="muted">Grade {{ prefs.grade }}</span></div></li>
+        <li><div class="setting setting-static"><span>Goal</span><span class="muted">{{ goal_label }}</span></div></li>
+        <li><div class="setting setting-static"><span>Topics</span><span class="muted setting-value">{% for key in prefs.interests %}{{ interests.get(key, key) }}{% if not loop.last %}, {% endif %}{% endfor %}</span></div></li>
+      {% endif %}
+      <li><a class="setting" href="{{ url_for('onboarding.onboarding') }}"><span>{{ 'Edit preferences' if prefs else 'Set up your preferences' }}</span>{{ icons.icon('chevron', 16) }}</a></li>
+    </ul>
+
     <h2 class="overline">Security</h2>
     <ul class="settings">
       <li><a class="setting" href="{{ url_for('account.password') }}"><span>Change password</span>{{ icons.icon('chevron', 16) }}</a></li>

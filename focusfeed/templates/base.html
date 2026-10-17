@@ -1,4 +1,16 @@
 {% import "_icons.html" as icons %}
+{% import "_ui.html" as ui %}
+{#- Which main section the current page belongs to, for the tab bar and sidebar. -#}
+{% set ep = request.endpoint or '' %}
+{% if ep == 'main.index' %}{% set section = 'today' %}
+{% elif ep in ('browse.index', 'topics.chapter', 'topics.interest') %}{% set section = 'explore' %}
+{% elif ep == 'videos.index' %}{% set section = 'videos' %}
+{% elif ep == 'study.progress' %}{% set section = 'progress' %}
+{% elif ep.startswith('account.') or ep == 'onboarding.onboarding' %}{% set section = 'me' %}
+{% else %}{% set section = '' %}{% endif %}
+{% macro nav_link(name, endpoint, label, icon_name, cls, current, size=20) -%}
+<a class="{{ cls }}{% if current == name %} active{% endif %}" href="{{ url_for(endpoint) }}"{% if current == name %} aria-current="page"{% endif %}>{{ icons.icon(icon_name, size) }}<span>{{ label }}</span></a>
+{%- endmacro %}
 {% macro theme_toggle() -%}
 <button type="button" class="icon-btn" data-theme-toggle aria-label="Switch between light and dark mode">
   <span class="icon-moon">{{ icons.icon('moon') }}</span>
@@ -33,9 +45,10 @@
   <aside class="sidebar">
     <a class="brand" href="{{ url_for('main.index') }}"><span class="brand-mark"></span>Focus Feed</a>
     <nav aria-label="Main" class="side-nav">
-      <a class="nav-link{% if request.endpoint == 'main.index' %} active{% endif %}" href="{{ url_for('main.index') }}">{{ icons.icon('home') }}Today</a>
-      <a class="nav-link{% if request.endpoint == 'videos.index' %} active{% endif %}" href="{{ url_for('videos.index') }}">{{ icons.icon('play') }}Videos</a>
-      <a class="nav-link{% if request.endpoint == 'onboarding.onboarding' %} active{% endif %}" href="{{ url_for('onboarding.onboarding') }}">{{ icons.icon('sliders') }}Preferences</a>
+      {{ nav_link('today', 'main.index', 'Today', 'home', 'nav-link', section) }}
+      {{ nav_link('explore', 'browse.index', 'Explore', 'compass', 'nav-link', section) }}
+      {{ nav_link('videos', 'videos.index', 'Videos', 'play', 'nav-link', section) }}
+      {{ nav_link('progress', 'study.progress', 'Progress', 'chart', 'nav-link', section) }}
     </nav>
     <div class="followed">
       <h2 class="overline">Followed topics</h2>
@@ -50,7 +63,7 @@
       </ul>
     </div>
     <div class="side-foot">
-      <a class="user-name" href="{{ url_for('account.index') }}" title="Your account">{{ g.user['username'] }}</a>
+      <a class="user-name{% if section == 'me' %} active{% endif %}" href="{{ url_for('account.index') }}"{% if section == 'me' %} aria-current="page"{% endif %}>{{ icons.icon('user', 18) }}<span>{{ g.user['username'] }}</span><span class="sr-only"> (your account)</span></a>
       <span class="side-actions">{{ theme_toggle() }}{{ logout_button() }}</span>
     </div>
   </aside>
@@ -78,9 +91,11 @@
 
   {% if g.user %}
   <nav class="tabbar" aria-label="Primary">
-    <a class="tab{% if request.endpoint == 'main.index' %} active{% endif %}" href="{{ url_for('main.index') }}">{{ icons.icon('home', 22) }}<span>Today</span></a>
-    <a class="tab{% if request.endpoint == 'videos.index' %} active{% endif %}" href="{{ url_for('videos.index') }}">{{ icons.icon('play', 22) }}<span>Videos</span></a>
-    <a class="tab{% if request.endpoint == 'onboarding.onboarding' %} active{% endif %}" href="{{ url_for('onboarding.onboarding') }}">{{ icons.icon('sliders', 22) }}<span>Preferences</span></a>
+    {{ nav_link('today', 'main.index', 'Today', 'home', 'tab', section, 22) }}
+    {{ nav_link('explore', 'browse.index', 'Explore', 'compass', 'tab', section, 22) }}
+    {{ nav_link('videos', 'videos.index', 'Videos', 'play', 'tab', section, 22) }}
+    {{ nav_link('progress', 'study.progress', 'Progress', 'chart', 'tab', section, 22) }}
+    {{ nav_link('me', 'account.index', 'Me', 'user', 'tab', section, 22) }}
   </nav>
   {% endif %}
 </div>

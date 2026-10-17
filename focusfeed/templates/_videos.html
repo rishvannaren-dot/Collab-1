@@ -1,11 +1,12 @@
 {% import "_icons.html" as icons %}
+{% import "_ui.html" as ui %}
 {% macro video_list(videos, format_duration) -%}
 <div class="videos">
   {% for v in videos %}
     <a class="video" href="https://www.youtube.com/watch?v={{ v.id }}" target="_blank" rel="noopener noreferrer">
       <img src="https://i.ytimg.com/vi/{{ v.id }}/mqdefault.jpg" alt="" loading="lazy">
       <span class="video-text">
-        <strong>{{ v.title }}</strong>
+        <strong>{{ v.title }}</strong>{{ ui.ext() }}
         <span class="muted small">{{ v.channel }}{% if v.seconds %} · {{ format_duration(v.seconds) }}{% endif %}</span>
       </span>
       {{ icons.icon('chevron', 16) }}

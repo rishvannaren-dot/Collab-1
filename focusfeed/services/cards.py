@@ -47,6 +47,17 @@ def grade_chapters(syllabus, subject_key, grade):
     return [c for c in subject["chapters"] if c["grade"] == grade]
 
 
+def neighbours(syllabus, subject_key, slug, grade):
+    """(previous, next) chapters in the same subject and grade, as {"name", "slug"}, or None at the ends."""
+    chapters = grade_chapters(syllabus, subject_key, grade)
+    slugs = [slugify(c["name"]) for c in chapters]
+    if slug not in slugs:
+        return None, None
+    i = slugs.index(slug)
+    pick = lambda j: {"name": chapters[j]["name"], "slug": slugs[j]} if 0 <= j < len(chapters) else None
+    return pick(i - 1), pick(i + 1)
+
+
 def syllabus_for(prefs, syllabus):
     """The student's syllabus: each subject of their goal with its chapters for their grade."""
     subjects = []

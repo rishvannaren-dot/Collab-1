@@ -2,6 +2,11 @@
 {% from "_study.html" import mark_form %}
 {% block title %}{{ chapter.name }}{% endblock %}
 {% block content %}
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="{{ url_for('browse.index') }}">Explore</a>
+    <span aria-hidden="true">›</span>
+    <a href="{{ url_for('browse.index') }}#{{ subject_key }}">{{ subject.label }}</a>
+  </nav>
   <header class="greeting page-head">
     <span class="tile tile-lg">{{ icons.subject_icon(subject.label, 26) }}</span>
     <div>
@@ -39,10 +44,18 @@
         {% endif %}
         {{ mark_form(item.key, item.name, item.studied, request.path ~ '#' ~ item.anchor, today) }}
         <p class="card-links">
-          {% if item.info %}<a class="link" href="{{ item.info.url }}" target="_blank" rel="noopener noreferrer">Read on Wikipedia</a>{% endif %}
-          <a class="link" href="{{ item.video_link }}" target="_blank" rel="noopener noreferrer">Videos on YouTube</a>
+          {% if item.info %}<a class="link" href="{{ item.info.url }}" target="_blank" rel="noopener noreferrer">Read on Wikipedia{{ ui.ext() }}</a>{% endif %}
+          <a class="link" href="{{ item.video_link }}" target="_blank" rel="noopener noreferrer">Videos on YouTube{{ ui.ext() }}</a>
         </p>
       </article>
     {% endfor %}
   </div>
+
+  {% set prev, next = neighbours %}
+  {% if prev or next %}
+    <nav class="pager" aria-label="Other chapters">
+      {% if prev %}<a class="pager-link" href="{{ url_for('topics.chapter', subject_key=subject_key, slug=prev.slug) }}"><span class="muted small">Previous chapter</span><span>{{ prev.name }}</span></a>{% endif %}
+      {% if next %}<a class="pager-link pager-next" href="{{ url_for('topics.chapter', subject_key=subject_key, slug=next.slug) }}"><span class="muted small">Next chapter</span><span>{{ next.name }}</span></a>{% endif %}
+    </nav>
+  {% endif %}
 {% endblock %}

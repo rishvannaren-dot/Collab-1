@@ -3,7 +3,7 @@
 {% block title %}Today{% endblock %}
 {% macro summary(info) -%}
   {% if info %}
-    <p class="summary">{{ info.summary }} <a class="source" href="{{ info.url }}" target="_blank" rel="noopener noreferrer">Wikipedia</a></p>
+    <p class="summary">{{ info.summary }} <a class="source" href="{{ info.url }}" target="_blank" rel="noopener noreferrer">Wikipedia{{ ui.ext() }}</a></p>
   {% endif %}
 {%- endmacro %}
 {% macro week_strip(card) -%}

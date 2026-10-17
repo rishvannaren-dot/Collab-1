@@ -126,5 +126,6 @@ def chapter(subject_key, slug):
         this_week=this_week,
         can_start=can_start,
         done=sum(1 for item in items if item["studied"]),
+        neighbours=cards_service.neighbours(syllabus, subject_key, slug, chapter["grade"]),
         today=helpers.today(),
     )

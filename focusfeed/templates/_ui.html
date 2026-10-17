@@ -1,0 +1,4 @@
+{#- Small pieces shared across pages. -#}
+
+{#- Tells screen reader users that a link opens a new tab. Put it inside every target="_blank" link. -#}
+{% macro ext() -%}<span class="sr-only"> (opens in a new tab)</span>{%- endmacro %}
