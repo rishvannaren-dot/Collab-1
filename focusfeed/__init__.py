@@ -1,12 +1,13 @@
 import os
 import secrets
+from datetime import timedelta
 
 from flask import Flask, flash, g, redirect, render_template, request, url_for
 from flask_wtf.csrf import CSRFError, CSRFProtect
 
 from . import cli, db
-from .routes import auth, main, onboarding, topics, videos
-from .routes.helpers import safe_next
+from .routes import account, auth, main, onboarding, topics, videos
+from .routes.helpers import format_date, safe_next
 from .services import cards, preferences
 
 csrf = CSRFProtect()
@@ -47,6 +48,7 @@ def create_app(test_config=None):
         TOPIC_INFO_LIVE=True,  # look up topic summaries on Wikipedia
         APP_TIMEZONE="Asia/Kolkata",  # when "today" starts
         SESSION_COOKIE_SAMESITE="Lax",
+        PERMANENT_SESSION_LIFETIME=timedelta(days=30),  # "Keep me signed in"
     )
     if test_config:
         app.config.update(test_config)
@@ -61,12 +63,14 @@ def create_app(test_config=None):
     with app.app_context():
         db.init_db()  # safe to repeat: tables are only created if missing
 
+    app.register_blueprint(account.bp)
     app.register_blueprint(auth.bp)
     app.register_blueprint(main.bp)
     app.register_blueprint(onboarding.bp)
     app.register_blueprint(topics.bp)
     app.register_blueprint(videos.bp)
     app.add_template_filter(cards.slugify, "slug")
+    app.add_template_filter(format_date, "date")
 
     @app.context_processor
     def inject_followed_topics():

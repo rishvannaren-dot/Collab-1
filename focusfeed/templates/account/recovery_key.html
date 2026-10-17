@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_forms.html" import password_field %}
+{% block title %}Recovery key{% endblock %}
+{% block content %}
+  <section class="narrow">
+    <h1>Set up a recovery key</h1>
+    <p class="muted">If you ever forget your password, a recovery key lets you set a new one. Focus Feed doesn't ask for your email, so this is how you get back in.</p>
+    {% if key_created_at %}
+      <p class="notice">You made a key on {{ key_created_at | date }}. Making a new one stops the old one working.</p>
+    {% endif %}
+    <form method="post" class="stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {{ password_field('current', 'current', 'Type your password to continue', 'current-password') }}
+      <button type="submit" class="btn btn-primary">{{ 'Make a new key' if key_created_at else 'Make my recovery key' }}</button>
+    </form>
+    <p class="muted center"><a class="link" href="{{ continue_url }}">Skip for now</a></p>
+  </section>
+{% endblock %}

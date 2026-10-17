@@ -22,6 +22,7 @@ def login(client, username="alice", password="longenough1"):
 
 def test_login_locks_after_repeated_failures(client):
     register(client)
+    client.post("/auth/logout")
     for _ in range(login_limits.MAX_FAILURES):
         login(client, password="wrongpassword")
     response = login(client)  # right password, but too late
@@ -83,7 +84,8 @@ def test_forms_work_with_csrf_token(csrf_client):
         "/auth/register",
         data={**account, "consent": "on", "csrf_token": csrf_token(csrf_client, "/auth/register")},
     )
-    assert response.headers["Location"] == "/auth/login"
+    assert response.headers["Location"] == "/account/recovery-key"
+    csrf_client.post("/auth/logout", data={"csrf_token": csrf_token(csrf_client, "/account")})
 
     response = csrf_client.post(
         "/auth/login", data={**account, "csrf_token": csrf_token(csrf_client, "/auth/login")}

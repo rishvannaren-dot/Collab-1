@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Your recovery key{% endblock %}
+{% block content %}
+  <section class="narrow key-page">
+    <span class="empty-art">{{ icons.icon('key', 36) }}</span>
+    <h1>Your recovery key</h1>
+    <p class="muted">{{ intro }}</p>
+    <p class="key" aria-label="Recovery key {{ key | replace('-', ' ') }}">{{ key }}</p>
+    <p>Write it down or give it to a parent. Treat it like a password: anyone with this key and your username can change your password.</p>
+    <p class="muted small">It is shown only once, and it stops working after you use it or make a new one.</p>
+    <div class="key-actions">
+      <button type="button" class="btn btn-ghost" data-print hidden>Print</button>
+      <a class="btn btn-primary" href="{{ continue_url }}">I've saved it</a>
+    </div>
+  </section>
+{% endblock %}

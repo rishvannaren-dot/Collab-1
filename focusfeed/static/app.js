@@ -25,6 +25,26 @@
     greeting.textContent = word + ",";
   }
 
+  // Show/Hide buttons on password fields (hidden until this script runs).
+  document.querySelectorAll("[data-password-toggle]").forEach(function (button) {
+    var input = document.getElementById(button.getAttribute("aria-controls"));
+    if (!input) return;
+    button.hidden = false;
+    button.addEventListener("click", function () {
+      var show = input.type === "password";
+      input.type = show ? "text" : "password";
+      button.setAttribute("aria-pressed", show ? "true" : "false");
+      button.setAttribute("aria-label", show ? "Hide password" : "Show password");
+    });
+  });
+
+  document.querySelectorAll("[data-print]").forEach(function (button) {
+    button.hidden = false;
+    button.addEventListener("click", function () {
+      window.print();
+    });
+  });
+
   var search = document.querySelector("[data-topic-search]");
   if (search) {
     search.addEventListener("input", function () {

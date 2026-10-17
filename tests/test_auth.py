@@ -20,7 +20,8 @@ def test_register_page_loads(client):
 
 def test_register_stores_hashed_password(client, app):
     response = register(client)
-    assert response.headers["Location"].endswith("/auth/login")
+    # Sign-up signs you in and offers a recovery key next.
+    assert response.headers["Location"].endswith("/account/recovery-key")
     with app.app_context():
         row = get_db().execute("SELECT * FROM users WHERE username = 'alice'").fetchone()
     assert row is not None

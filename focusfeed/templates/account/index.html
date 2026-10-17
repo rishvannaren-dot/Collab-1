@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Your account{% endblock %}
+{% block content %}
+  <section class="narrow">
+    <header class="greeting page-head">
+      <span class="tile tile-lg">{{ icons.icon('user', 26) }}</span>
+      <div>
+        <h1>{{ g.user['username'] }}</h1>
+        <p class="muted">Your account</p>
+      </div>
+    </header>
+
+    <h2 class="overline">Security</h2>
+    <ul class="settings">
+      <li><a class="setting" href="{{ url_for('account.password') }}"><span>Change password</span>{{ icons.icon('chevron', 16) }}</a></li>
+      <li>
+        <a class="setting" href="{{ url_for('account.recovery_key') }}">
+          <span>Recovery key <span class="muted small setting-note">{% if key_created_at %}made {{ key_created_at | date }}{% else %}not set up yet{% endif %}</span></span>
+          {{ icons.icon('chevron', 16) }}
+        </a>
+      </li>
+      <li>
+        <form method="post" action="{{ url_for('account.sign_out_everywhere') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ url_for('account.index') }}">
+          <button type="submit" class="setting"><span>Sign out of all other devices</span>{{ icons.icon('log-out', 16) }}</button>
+        </form>
+      </li>
+    </ul>
+  </section>
+{% endblock %}

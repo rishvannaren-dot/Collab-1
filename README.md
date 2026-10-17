@@ -60,6 +60,26 @@ Add entries to `focusfeed/data/videos.json`. `tags` is the lower-case chapter na
 
 The list ships empty on purpose: add only videos someone on the team has watched.
 
+## Accounts
+
+- Sign-up asks for a nickname (3-30 letters, numbers, `.`, `_` or `-`); "Alice" and "alice" are the same account.
+- Straight after sign-up the student can make a **recovery key** (like `ABCD-EFGH-JKLM-NPQR`). With it, "Forgot password?" on the sign-in page sets a new password. There is no email, on purpose. Each key works once; only its hash is stored.
+- The Account page (`/account`) has Change password, a new recovery key, and "Sign out of all other devices".
+
+## For the team
+
+Run these in the project folder with the virtual environment active:
+
+```bash
+flask --app run users set-password USERNAME   # a student lost their password and key
+flask --app run users unlock USERNAME         # clear the 15-minute sign-in lock
+flask --app run backup                        # dated copy in instance/backups, keeps 7
+```
+
+### Changing the database
+
+Never edit `focusfeed/schema.sql` (it is the starting point for every existing database). Add a numbered entry to `MIGRATIONS` in `focusfeed/migrations.py` instead; it runs once on every database the next time the app starts.
+
 ## Project structure
 
 ```

@@ -1,0 +1,18 @@
+{% import "_icons.html" as icons %}
+{#- A password input with a Show/Hide button. The button stays hidden until app.js runs. -#}
+{% macro password_field(name, id, label, autocomplete, minlength=None) -%}
+<label for="{{ id }}">{{ label }}</label>
+<div class="pw-field">
+  <input type="password" name="{{ name }}" id="{{ id }}" autocomplete="{{ autocomplete }}"{% if minlength %} minlength="{{ minlength }}"{% endif %} maxlength="128" required>
+  <button type="button" class="pw-toggle" data-password-toggle aria-controls="{{ id }}" aria-pressed="false" aria-label="Show password" hidden>
+    <span class="icon-show">{{ icons.icon('eye', 18) }}</span><span class="icon-hide">{{ icons.icon('eye-off', 18) }}</span>
+  </button>
+</div>
+{%- endmacro %}
+
+{#- Username input shared by sign in, sign up and forgot password. -#}
+{% macro username_field(hint=None) -%}
+<label for="username">Username</label>
+<input name="username" id="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="30"{% if hint %} aria-describedby="username-hint"{% endif %} required>
+{% if hint %}<p class="hint" id="username-hint">{{ hint }}</p>{% endif %}
+{%- endmacro %}

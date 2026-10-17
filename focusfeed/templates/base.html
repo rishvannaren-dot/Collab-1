@@ -50,7 +50,7 @@
       </ul>
     </div>
     <div class="side-foot">
-      <span class="user-name">{{ g.user['username'] }}</span>
+      <a class="user-name" href="{{ url_for('account.index') }}" title="Your account">{{ g.user['username'] }}</a>
       <span class="side-actions">{{ theme_toggle() }}{{ logout_button() }}</span>
     </div>
   </aside>

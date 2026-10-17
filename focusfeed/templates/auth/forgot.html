@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_forms.html" import password_field, username_field %}
+{% block title %}Forgot password{% endblock %}
+{% block content %}
+  <section class="auth">
+    <a class="back" href="{{ url_for('auth.login') }}" aria-label="Back to sign in">{{ icons.icon('arrow-left') }}</a>
+    <h1>Forgot your password?</h1>
+    <p class="muted">Use the recovery key you saved when you made your account.</p>
+    <form method="post" class="stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {{ username_field() }}
+      <label for="recovery_key">Recovery key</label>
+      <input name="recovery_key" id="recovery_key" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="ABCD-EFGH-JKLM-NPQR" maxlength="40" required>
+      {{ password_field('password', 'password', 'New password', 'new-password', minlength=8) }}
+      {{ password_field('confirm', 'confirm', 'New password again', 'new-password', minlength=8) }}
+      <button type="submit" class="btn btn-primary">Set new password</button>
+    </form>
+    <p class="muted small center">No recovery key? Ask the Focus Feed team to reset your password.</p>
+  </section>
+{% endblock %}

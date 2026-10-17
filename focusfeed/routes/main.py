@@ -2,7 +2,7 @@ from flask import Blueprint, g, redirect, render_template, url_for
 
 from ..db import get_db
 from ..services import cards as cards_service
-from ..services import explore, preferences, topic_info
+from ..services import explore, preferences, recovery, topic_info
 from . import helpers
 from .auth import login_required
 from .topics import attach_info
@@ -51,6 +51,7 @@ def index():
         goal_label=preferences.GOALS.get(prefs["goal"], ""),
         greeting=greeting_for(helpers.now().hour),
         today=today,
+        has_recovery_key=recovery.key_created_at(get_db(), g.user["id"]) is not None,
     )
 
 

@@ -6,7 +6,18 @@ applies every pending batch in one transaction, and PRAGMA user_version records
 the newest version applied, so existing databases are upgraded in place.
 """
 
-MIGRATIONS = []
+MIGRATIONS = [
+    (
+        1,  # recovery keys, and a counter that signs out every other device
+        [
+            "ALTER TABLE users ADD COLUMN session_version INTEGER NOT NULL DEFAULT 0",
+            "CREATE TABLE recovery_keys ("
+            " user_id INTEGER PRIMARY KEY REFERENCES users (id) ON DELETE CASCADE,"
+            " key_hash TEXT NOT NULL,"
+            " created_at INTEGER NOT NULL)",
+        ],
+    ),
+]
 
 
 def latest():

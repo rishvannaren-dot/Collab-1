@@ -8,7 +8,8 @@ import click
 from flask import current_app
 from flask.cli import with_appcontext
 
-from .services import clock
+from .db import get_db
+from .services import account, clock, login_limits
 
 
 def backup_db(src_path, dest_dir, day, keep):
@@ -46,5 +47,50 @@ def backup_command(dest, keep):
     click.echo(f"Saved {target}")
 
 
+@click.group("users")
+def users_group():
+    """Help a student who is locked out (they may have lost their recovery key)."""
+
+
+def find_or_fail(db, username):
+    user = account.find_user(db, username)
+    if user is None:
+        raise click.ClickException(f"No account called {username!r}.")
+    return user
+
+
+def unlock(db, username):
+    login_limits.clear_failures(db, username.lower())
+    login_limits.clear_failures(db, "reset:" + username.lower())
+
+
+@users_group.command("set-password")
+@click.argument("username")
+@with_appcontext
+def set_password_command(username):
+    """Set a new password and sign the account out everywhere."""
+    db = get_db()
+    user = find_or_fail(db, username)
+    password = click.prompt("New password", hide_input=True, confirmation_prompt=True)
+    error = account.password_error(password)
+    if error:
+        raise click.ClickException(error)
+    account.set_password(db, user["id"], password)
+    unlock(db, user["username"])
+    click.echo(f"Password changed for {user['username']}. They are signed out everywhere.")
+
+
+@users_group.command("unlock")
+@click.argument("username")
+@with_appcontext
+def unlock_command(username):
+    """Clear failed sign-in and reset attempts so they can try again now."""
+    db = get_db()
+    user = find_or_fail(db, username)
+    unlock(db, user["username"])
+    click.echo(f"Unlocked {user['username']}.")
+
+
 def init_app(app):
     app.cli.add_command(backup_command)
+    app.cli.add_command(users_group)

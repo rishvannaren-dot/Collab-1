@@ -1,5 +1,7 @@
 """Small helpers shared by the route modules."""
 
+from datetime import date, datetime
+
 from flask import current_app
 
 from ..services import clock
@@ -24,3 +26,14 @@ def safe_next(target, default="/"):
     if "\\" in target or any(ord(ch) < 32 or ord(ch) == 127 for ch in target):
         return default
     return target
+
+
+def format_date(value):
+    """"12 Oct 2026" from a date, an ISO date string or a Unix timestamp; "" for None."""
+    if value is None or value == "":
+        return ""
+    if isinstance(value, (int, float)):
+        value = datetime.fromtimestamp(value, clock.zone(current_app.config["APP_TIMEZONE"]))
+    elif isinstance(value, str):
+        value = date.fromisoformat(value[:10])
+    return f"{value.day} {value.strftime('%b %Y')}"

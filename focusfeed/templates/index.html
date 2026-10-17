@@ -12,6 +12,13 @@
     <p class="muted">Grade {{ prefs.grade }} · {{ goal_label }}</p>
   </header>
 
+  {% if not has_recovery_key %}
+    <p class="notice">
+      {{ icons.icon('key', 16) }} Set up a recovery key so you can get back in if you forget your password.
+      <a class="link" href="{{ url_for('account.recovery_key') }}">Set it up</a>
+    </p>
+  {% endif %}
+
   <div class="section-head">
     <h2 class="overline">Today's focus</h2>
     <span class="muted">{{ today.strftime('%d %b') }}</span>

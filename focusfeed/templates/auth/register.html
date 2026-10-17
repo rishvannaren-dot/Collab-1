@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_forms.html" import password_field, username_field %}
 {% block title %}Sign up{% endblock %}
 {% block content %}
   <section class="auth">
@@ -7,10 +8,8 @@
     <p class="muted">Takes a minute. You choose what you see next.</p>
     <form method="post" class="stack">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <label for="username">Username</label>
-      <input name="username" id="username" autocomplete="username" required>
-      <label for="password">Password</label>
-      <input type="password" name="password" id="password" autocomplete="new-password" minlength="8" required>
+      {{ username_field('Pick a nickname, not your real name: 3-30 letters, numbers, dots, dashes or underscores.') }}
+      {{ password_field('password', 'password', 'Password', 'new-password', minlength=8) }}
       <label class="consent">
         <input type="checkbox" name="consent" required>
         <span>I'm 18 or older, or a parent or guardian has agreed. See the
