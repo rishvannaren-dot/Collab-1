@@ -2,7 +2,7 @@
 {% block title %}Today{% endblock %}
 {% block content %}
   <header class="greeting">
-    <p class="muted">{{ greeting }},</p>
+    <p class="muted" data-greeting>{{ greeting }},</p>
     <h1>{{ g.user['username'] }}</h1>
     <p class="muted">Grade {{ prefs.grade }} · {{ goal_label }}</p>
   </header>

@@ -82,6 +82,7 @@ def test_welcome_redirects_when_logged_in(student):
 def test_home_has_greeting_and_nav(student):
     html = student.get("/").data.decode()
     assert "alice" in html
+    assert "data-greeting" in html
     assert "Today&#39;s focus" in html or "Today's focus" in html
     assert 'class="tabbar"' in html
     assert "Followed topics" in html

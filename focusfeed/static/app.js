@@ -17,6 +17,14 @@
     });
   });
 
+  // The server's clock may be in another time zone, so greet by the viewer's clock.
+  var greeting = document.querySelector("[data-greeting]");
+  if (greeting) {
+    var hour = new Date().getHours();
+    var word = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+    greeting.textContent = word + ",";
+  }
+
   var search = document.querySelector("[data-topic-search]");
   if (search) {
     search.addEventListener("input", function () {
