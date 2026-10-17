@@ -21,6 +21,8 @@
 
   document.querySelectorAll("[data-theme-toggle]").forEach(function (button) {
     button.addEventListener("click", function () {
+      // Switching theme stays on this page: use the plain crossfade, not the page arrival.
+      root.removeAttribute("data-nav");
       var next = currentTheme() === "dark" ? "light" : "dark";
       function apply() {
         root.setAttribute("data-theme", next);

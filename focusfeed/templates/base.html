@@ -32,7 +32,7 @@
   <meta name="theme-color" content="#f7f5ef" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0f1218" media="(prefers-color-scheme: dark)">
   <title>{% block title %}{% endblock %} - Focus Feed</title>
-  <script nonce="{{ csp_nonce }}">try{var t=localStorage.getItem('theme');if(t){document.documentElement.setAttribute('data-theme',t)}}catch(e){}</script>
+  <script nonce="{{ csp_nonce }}">(function(r){try{var t=localStorage.getItem('theme');if(t){r.setAttribute('data-theme',t)}}catch(e){}var s=Date.now()/1e3;r.style.setProperty('--glow-cool',-(s%52).toFixed(1)+'s');r.style.setProperty('--glow-warm',-(s%68).toFixed(1)+'s');try{var p=new URL(document.referrer);if(p.origin===location.origin&&p.pathname!==location.pathname){r.setAttribute('data-nav','turn')}}catch(e){}})(document.documentElement)</script>
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   <link rel="preload" href="{{ url_for('static', filename='fonts/dm-sans-latin-wght-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="{{ url_for('static', filename='fonts/newsreader-latin-500-normal.woff2') }}" as="font" type="font/woff2" crossorigin>

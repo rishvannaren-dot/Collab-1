@@ -79,6 +79,15 @@ def test_fonts_are_served_locally_with_their_licence(client):
         assert "SIL Open Font License" in (STATIC / "fonts" / licence).read_text()
 
 
+def test_one_inline_script_and_it_carries_the_nonce(client):
+    response = client.get("/welcome")
+    html = response.data.decode()
+    nonce = re.search(r"'nonce-([^']+)'", response.headers["Content-Security-Policy"]).group(1)
+    inline = [tag for tag in re.findall(r"<script\b[^>]*>", html) if "src=" not in tag]
+    assert inline == [f'<script nonce="{nonce}">']
+    assert not re.search(r"\sstyle=\"", html)
+
+
 def test_preloaded_fonts_exist_and_are_used(client):
     css = (STATIC / "style.css").read_text()
     html = client.get("/welcome").data.decode()

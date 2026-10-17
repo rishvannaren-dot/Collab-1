@@ -203,6 +203,36 @@ def test_borders_and_focus_ring_meet_3_to_1(theme):
     assert not failures, failures
 
 
+def channel_mix_luminances(colours, steps=24):
+    """Relative luminance of every blend of the given colours (any mix the browser may paint)."""
+    rgbs = [[int(c[i : i + 2], 16) for i in (1, 3, 5)] for c in colours]
+    found = []
+    for i in range(steps + 1):
+        for j in range(steps + 1 - i):
+            weights = (i / steps, j / steps, 1 - (i + j) / steps)
+            mix = [sum(w * rgb[k] for w, rgb in zip(weights, rgbs)) for k in range(3)]
+            found.append(luminance("#" + "".join(f"{round(v):02x}" for v in mix)))
+    return min(found), max(found)
+
+
+@pytest.mark.parametrize("theme", ("light", "dark"))
+def test_text_stays_readable_over_the_daylight(theme):
+    """The two patches of light behind the page head, alone or overlapping, keep AA contrast."""
+    light = tokens("\n:root")
+    colours = light if theme == "light" else {**light, **tokens(':root[data-theme="dark"]')}
+    darkest, lightest = channel_mix_luminances([colours["bg"], colours["glow-1"], colours["glow-2"]])
+    failures = []
+    for fg, floor in [(c, 4.5) for c in ("text", "text-2", "muted", "accent-text", "ok", "warn", "bad", "danger")] + [
+        ("border-strong", 3),
+        ("focus", 3),
+    ]:
+        fg_lum = luminance(colours[fg])
+        worst = min((max(fg_lum, bg) + 0.05) / (min(fg_lum, bg) + 0.05) for bg in (darkest, lightest))
+        if worst < floor:
+            failures.append(f"{fg}: {worst:.2f}")
+    assert not failures, failures
+
+
 def test_system_dark_theme_matches_the_dark_toggle():
     system = re.search(r"prefers-color-scheme: dark\)\s*\{\s*:root:not\(\[data-theme=\"light\"\]\)\s*\{(.*?)\n  \}", CSS, re.S)
     system_tokens = dict(re.findall(r"--([\w-]+):\s*(#[0-9a-fA-F]{6})", system.group(1)))
@@ -258,3 +288,30 @@ def test_the_audit_accepts_good_markup():
         "<input type='hidden' name='t'><img src='x' alt=''><button aria-label='Close'><svg></svg></button>"
         "<a href='https://x.org' target='_blank'>X<span class='sr-only'> (opens in a new tab)</span></a>",
     )
+
+
+
+def test_background_motion_stops_by_itself():
+    """No endless animation, and no script-driven animation loop, so a long study session stays still."""
+    css = re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)
+    endless = [m.group(0) for m in re.finditer(r"animation[^;{}]*;", css) if "infinite" in m.group(0)]
+    assert not endless, endless
+    script = (Path(__file__).parent.parent / "focusfeed" / "static" / "app.js").read_text()
+    assert "requestAnimationFrame" not in script and "setInterval" not in script
+
+
+def test_page_transitions_never_add_the_two_pages_together():
+    """Overriding the browser's crossfade must also drop its plus-lighter blend, or the screen flashes white."""
+    css = re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)
+    rules = re.findall(r"([^{}]*::view-transition-(?:old|new)\(root\)[^{}]*)\{([^{}]*)\}", css)
+    overriding = [(sel.strip(), body) for sel, body in rules if re.search(r"animation\s*:", body)]
+    assert overriding, "expected the page arrival transition"
+    for selector, body in overriding:
+        assert "mix-blend-mode: normal" in body, selector
+
+
+def test_daylight_is_left_out_of_print_and_high_contrast():
+    css = re.sub(r"/\*.*?\*/", "", CSS, flags=re.S)
+    contexts = [" ".join(enclosing_blocks(css, m.start())) for m in re.finditer(r"\.content::before", css)]
+    assert any("@media print" in c for c in contexts)
+    assert any("forced-colors: active" in c and "prefers-contrast: more" in c for c in contexts)
