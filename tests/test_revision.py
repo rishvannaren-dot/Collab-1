@@ -144,7 +144,7 @@ def test_remembering_raises_confidence(client, app, clock_at):
     clock_at(date(2026, 10, 24))
     review(client, "1")
     assert due_row(app)["confidence"] == 3
-    assert "Needs work" not in client.get("/progress").data.decode()
+    assert 'id="needs-work"' not in client.get("/progress").data.decode()
 
 
 def test_review_only_for_your_own_studied_topics(client, app):

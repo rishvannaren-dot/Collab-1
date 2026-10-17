@@ -1,3 +1,4 @@
+import re
 from datetime import date
 
 import pytest
@@ -205,9 +206,12 @@ def test_progress_page_counts_and_needs_work(client):
     mark(client, "physics/electrostatics/gauss-s-law", "3")
     html = client.get("/progress").data.decode()
     assert "2 of 29 topics" in html
-    needs = html[html.index("Needs work"):html.index('id="physics"')]
+    needs = html[html.index('id="needs-work"'):html.index('id="physics"')]
+    assert "Worth another look" in needs
     assert "Coulomb&#39;s law" in needs
     assert "Gauss" not in needs
+    stats = html[html.index('class="stats"'):html.index("</dl>")]
+    assert [int(n) for n in re.findall(r'<dd class="num">(\d+)</dd>', stats)] == [2, 1, 1]  # studied, got it, another look
 
 
 def test_progress_for_general_goal(client):

@@ -7,9 +7,9 @@
       <img src="https://i.ytimg.com/vi/{{ v.id }}/mqdefault.jpg" alt="" loading="lazy">
       <span class="video-text">
         <strong>{{ v.title }}</strong>{{ ui.ext() }}
-        <span class="muted small">{{ v.channel }}{% if v.seconds %} · {{ format_duration(v.seconds) }}{% endif %}</span>
+        <span class="muted small">{{ v.channel }}{% if v.seconds %} · <span class="num">{{ format_duration(v.seconds) }}</span>{% endif %}</span>
       </span>
-      {{ icons.icon('chevron', 16) }}
+      {{ icons.icon('external', 16) }}
     </a>
   {% endfor %}
 </div>

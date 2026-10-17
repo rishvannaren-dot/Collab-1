@@ -2,7 +2,7 @@
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
   <div class="empty">
-    <span class="empty-art">{{ icons.icon('sprout', 40) }}</span>
+    <span class="empty-art is-missing" aria-hidden="true"></span>
     <h1>{{ title }}</h1>
     <p class="muted">{{ message }}</p>
     <a class="btn btn-primary" href="{{ url_for('main.index') }}">Back to your feed</a>

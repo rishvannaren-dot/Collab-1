@@ -10,8 +10,8 @@
   <header class="greeting page-head">
     <span class="tile tile-lg">{{ icons.subject_icon(subject.label, 26) }}</span>
     <div>
+      <p class="card-kicker">{{ subject.label }} · Class {{ chapter.grade }}</p>
       <h1>{{ chapter.name }}</h1>
-      <p class="muted">{{ subject.label }} · Class {{ chapter.grade }}</p>
     </div>
   </header>
 
@@ -32,12 +32,12 @@
     <span class="muted">{{ done }} of {{ items | length }} topics studied</span>
   </div>
   <progress class="bar" value="{{ done }}" max="{{ items | length }}" aria-label="{{ done }} of {{ items | length }} topics studied"></progress>
-  <div class="topic-list">
+  <div class="topic-list chapter-topics">
     {% for item in items %}
-      <article class="card" id="{{ item.anchor }}">
-        <div>
+      <article class="card{% if item.studied %} is-c{{ item.studied.confidence }}{% endif %}{% if item.today %} is-today{% endif %}" id="{{ item.anchor }}">
+        <div class="card-top">
+          <p class="card-kicker">Topic {{ loop.index }} of {{ items | length }}{% if item.today %} <span class="badge">Today</span>{% endif %}</p>
           <h3>{{ item.name }}</h3>
-          {% if item.today %}<span class="badge">Today</span>{% endif %}
         </div>
         {% if item.info %}
           <p class="summary">{{ item.info.summary }}</p>
@@ -56,7 +56,7 @@
   {% set prev, next = neighbours %}
   {% if prev or next %}
     <nav class="pager" aria-label="Other chapters">
-      {% if prev %}<a class="pager-link" href="{{ url_for('topics.chapter', subject_key=subject_key, slug=prev.slug) }}"><span class="muted small">Previous chapter</span><span>{{ prev.name }}</span></a>{% endif %}
+      {% if prev %}<a class="pager-link pager-prev" href="{{ url_for('topics.chapter', subject_key=subject_key, slug=prev.slug) }}"><span class="muted small">Previous chapter</span><span>{{ prev.name }}</span></a>{% endif %}
       {% if next %}<a class="pager-link pager-next" href="{{ url_for('topics.chapter', subject_key=subject_key, slug=next.slug) }}"><span class="muted small">Next chapter</span><span>{{ next.name }}</span></a>{% endif %}
     </nav>
   {% endif %}

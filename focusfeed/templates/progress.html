@@ -2,6 +2,7 @@
 {% block title %}Progress{% endblock %}
 {% block content %}
   <header class="greeting">
+    <p class="overline">Your record</p>
     <h1>Progress</h1>
     <p class="muted">Topics you've marked as studied, out of the chapters in Focus Feed for Class {{ prefs.grade }}{% if goal_label %} · {{ goal_label }}{% endif %}.</p>
   </header>
@@ -14,13 +15,37 @@
       <a class="btn btn-primary" href="{{ url_for('onboarding.onboarding') }}">Change preferences</a>
     </div>
   {% else %}
+    {% set ns = namespace(total=0, studied=0, got=0, again=0) %}
+    {% for subject in subjects %}
+      {% set ns.total = ns.total + subject.total %}
+      {% for chapter in subject.chapters %}
+        {% for topic in chapter.topics %}
+          {% if topic.confidence %}{% set ns.studied = ns.studied + 1 %}{% endif %}
+          {% if topic.confidence == 3 %}{% set ns.got = ns.got + 1 %}{% elif topic.confidence %}{% set ns.again = ns.again + 1 %}{% endif %}
+        {% endfor %}
+      {% endfor %}
+    {% endfor %}
+
     {% if not any_studied %}
       <p class="notice">Mark a topic as studied ("Got it", "Shaky" or "Lost me") to see your progress here.</p>
     {% endif %}
 
+    <dl class="stats">
+      <div><dt>Topics studied <span class="sr-only">out of {{ ns.total }}</span></dt><dd class="num">{{ ns.studied }}</dd></div>
+      <div><dt>Got it</dt><dd class="num">{{ ns.got }}</dd></div>
+      <div><dt>Worth another look</dt><dd class="num">{{ ns.again }}</dd></div>
+    </dl>
+
+    <ul class="legend" aria-label="What the dots mean">
+      <li><span class="dot dot-3" aria-hidden="true"></span> Got it</li>
+      <li><span class="dot dot-2" aria-hidden="true"></span> Shaky</li>
+      <li><span class="dot dot-1" aria-hidden="true"></span> Lost me</li>
+      <li><span class="dot dot-0" aria-hidden="true"></span> Not studied yet</li>
+    </ul>
+
     {% if needs_work %}
       <section class="vsection" aria-labelledby="needs-work">
-        <h2 class="overline" id="needs-work">Needs work</h2>
+        <h2 class="overline" id="needs-work">Worth another look</h2>
         <ul class="needs-list">
           {% for item in needs_work %}
             <li>
@@ -43,18 +68,18 @@
         <ul class="chapter-progress">
           {% for chapter in subject.chapters %}
             <li>
-              <a class="title-link" href="{{ url_for('topics.chapter', subject_key=subject.key, slug=chapter.slug) }}">{{ chapter.name }}</a>
+              <a class="title-link row-title" href="{{ url_for('topics.chapter', subject_key=subject.key, slug=chapter.slug) }}">{{ chapter.name }}</a>
+              <span class="leader" aria-hidden="true"></span>
               <span class="dots">
                 {% for topic in chapter.topics %}
                   <span class="dot dot-{{ topic.confidence or 0 }}" title="{{ topic.name }}: {{ labels[topic.confidence] if topic.confidence else 'not studied' }}"><span class="sr-only">{{ topic.name }}: {{ labels[topic.confidence] if topic.confidence else 'not studied' }}</span></span>
                 {% endfor %}
               </span>
-              <span class="muted small">{{ chapter.done }}/{{ chapter.total }}</span>
+              <span class="num row-count">{{ chapter.done }}/{{ chapter.total }}</span>
             </li>
           {% endfor %}
         </ul>
       </section>
     {% endfor %}
-    <p class="muted small">Dots: <span class="dot dot-3" aria-hidden="true"></span> Got it · <span class="dot dot-2" aria-hidden="true"></span> Shaky · <span class="dot dot-1" aria-hidden="true"></span> Lost me · <span class="dot dot-0" aria-hidden="true"></span> not studied yet</p>
   {% endif %}
 {% endblock %}

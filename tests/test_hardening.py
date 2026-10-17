@@ -79,6 +79,16 @@ def test_fonts_are_served_locally_with_their_licence(client):
         assert "SIL Open Font License" in (STATIC / "fonts" / licence).read_text()
 
 
+def test_preloaded_fonts_exist_and_are_used(client):
+    css = (STATIC / "style.css").read_text()
+    html = client.get("/welcome").data.decode()
+    preloads = re.findall(r'<link rel="preload" href="/static/(fonts/[^"]+)" as="font" type="font/woff2" crossorigin>', html)
+    assert len(preloads) == 2
+    for path in preloads:
+        assert f'url("{path}")' in css
+        assert client.get(f"/static/{path}").status_code == 200
+
+
 def test_secure_cookie_setting(tmp_path, monkeypatch):
     app = make_app(tmp_path, SESSION_COOKIE_SECURE=True)
     client = app.test_client()

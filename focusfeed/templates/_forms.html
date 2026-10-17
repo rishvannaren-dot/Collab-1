@@ -18,14 +18,15 @@
 {%- endmacro %}
 
 {#- Follow / Unfollow button for one interest. -#}
-{% macro follow_form(key, label, following, next) -%}
+{#- quiet: a ghost Follow button, for long lists where a column of blue buttons would shout. -#}
+{% macro follow_form(key, label, following, next, quiet=False) -%}
 <form method="post" action="{{ url_for('browse.unfollow' if following else 'browse.follow', key=key) }}" class="inline-form">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <input type="hidden" name="next" value="{{ next }}">
   {% if following %}
     <button type="submit" class="btn btn-ghost btn-small" aria-label="Unfollow {{ label }}">Unfollow</button>
   {% else %}
-    <button type="submit" class="btn btn-primary btn-small" aria-label="Follow {{ label }}">Follow</button>
+    <button type="submit" class="btn {{ 'btn-ghost' if quiet else 'btn-primary' }} btn-small" aria-label="Follow {{ label }}">Follow</button>
   {% endif %}
 </form>
 {%- endmacro %}

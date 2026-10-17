@@ -2,48 +2,54 @@
 {% block title %}Choose your topics{% endblock %}
 {% block content %}
   <section class="narrow">
+    <p class="overline">Set up</p>
     <h1>Choose your topics</h1>
-    <p class="muted">Pick what you want to follow. You can always change this later.</p>
+    <p class="muted">Two quick steps. You can change both later.</p>
 
     <form method="post" class="stack">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div class="search">
-        {{ icons.icon('search', 18) }}
-        <input type="search" placeholder="Search topics" aria-label="Search topics" data-topic-search>
-      </div>
 
-      <fieldset class="topics">
-        <legend class="sr-only">Interests</legend>
-        {% for key, label in interests.items() %}
-          <label class="topic" data-topic="{{ label | lower }}">
-            <input type="checkbox" name="interests" value="{{ key }}" {% if key in current.interests %}checked{% endif %}>
-            <span class="topic-icon">{{ icons.topic_icon(key, 18) }}</span>
-            <span class="topic-name">{{ label }}</span>
-            <span class="topic-check">{{ icons.icon('check', 14) }}</span>
-          </label>
-        {% endfor %}
+      <fieldset class="step">
+        <legend><span class="step-num num" aria-hidden="true">01</span> Your class and goal</legend>
+        <div class="pair">
+          <div class="stack">
+            <label for="grade">Grade</label>
+            <select name="grade" id="grade" required>
+              <option value="" disabled {% if not current.grade %}selected{% endif %}>Select grade</option>
+              {% for g_ in grades %}
+                <option value="{{ g_ }}" {% if current.grade|string == g_|string %}selected{% endif %}>Grade {{ g_ }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="stack">
+            <label for="goal">Goal</label>
+            <select name="goal" id="goal" required>
+              <option value="" disabled {% if not current.goal %}selected{% endif %}>Select goal</option>
+              {% for key, label in goals.items() %}
+                <option value="{{ key }}" {% if current.goal == key %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
       </fieldset>
 
-      <div class="pair">
-        <div class="stack">
-          <label for="grade">Grade</label>
-          <select name="grade" id="grade" required>
-            <option value="" disabled {% if not current.grade %}selected{% endif %}>Select grade</option>
-            {% for g_ in grades %}
-              <option value="{{ g_ }}" {% if current.grade|string == g_|string %}selected{% endif %}>Grade {{ g_ }}</option>
-            {% endfor %}
-          </select>
+      <fieldset class="step">
+        <legend><span class="step-num num" aria-hidden="true">02</span> Topics to follow</legend>
+        <div class="search">
+          {{ icons.icon('search', 18) }}
+          <input type="search" placeholder="Search topics" aria-label="Search topics" data-topic-search>
         </div>
-        <div class="stack">
-          <label for="goal">Goal</label>
-          <select name="goal" id="goal" required>
-            <option value="" disabled {% if not current.goal %}selected{% endif %}>Select goal</option>
-            {% for key, label in goals.items() %}
-              <option value="{{ key }}" {% if current.goal == key %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
+        <div class="topics">
+          {% for key, label in interests.items() %}
+            <label class="topic" data-topic="{{ label | lower }}">
+              <input type="checkbox" name="interests" value="{{ key }}" {% if key in current.interests %}checked{% endif %}>
+              <span class="topic-icon">{{ icons.topic_icon(key, 18) }}</span>
+              <span class="topic-name">{{ label }}</span>
+              <span class="topic-check">{{ icons.icon('check', 14) }}</span>
+            </label>
+          {% endfor %}
         </div>
-      </div>
+      </fieldset>
 
       <button type="submit" class="btn btn-primary">Continue</button>
     </form>

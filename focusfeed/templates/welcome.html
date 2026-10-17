@@ -2,12 +2,28 @@
 {% block title %}Welcome{% endblock %}
 {% block content %}
   <section class="splash">
+    <p class="overline">A calm study feed</p>
     <h1 class="display">Focus<br>Feed</h1>
     <p class="lead">Only what you follow.<br>No more. No less.</p>
-    <svg class="splash-art" viewBox="0 0 160 120" aria-hidden="true">
-      <circle cx="80" cy="46" r="34" fill="var(--accent)"/>
-      <path d="M12 120a68 52 0 0 1 136 0z" fill="var(--accent-soft)"/>
+    <svg class="splash-line" viewBox="0 0 320 40" aria-hidden="true">
+      <path class="sl-plan" d="M112 20H304"/>
+      <path class="sl-past" d="M16 20H112" pathLength="1"/>
+      <circle class="sl-done" cx="16" cy="20" r="9"/>
+      <path class="sl-tick" d="M12 20.5l2.8 2.8 5-5.6"/>
+      <circle class="sl-done" cx="64" cy="20" r="9"/>
+      <path class="sl-tick" d="M60 20.5l2.8 2.8 5-5.6"/>
+      <circle class="sl-today" cx="112" cy="20" r="11"/>
+      <circle class="sl-here" cx="112" cy="20" r="4"/>
+      <circle class="sl-stop" cx="160" cy="20" r="8"/>
+      <circle class="sl-stop" cx="208" cy="20" r="8"/>
+      <circle class="sl-stop" cx="256" cy="20" r="8"/>
+      <circle class="sl-rest" cx="304" cy="20" r="3.5"/>
     </svg>
+    <ol class="promise">
+      <li>One topic a day from your syllabus, in textbook order.</li>
+      <li>A quick recall when a topic is due to come back.</li>
+      <li>No ads, no tracking, and no email needed.</li>
+    </ol>
     <div class="splash-actions">
       <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Get started</a>
       <a class="link" href="{{ url_for('auth.login') }}">I already have an account</a>

@@ -3,6 +3,7 @@
 {% block title %}Explore{% endblock %}
 {% block content %}
   <header class="greeting">
+    <p class="overline">Contents</p>
     <h1>Explore</h1>
     <p class="muted">Your syllabus and your topics, all in one place.</p>
   </header>
@@ -13,15 +14,26 @@
   </div>
   <p class="muted" data-search-empty hidden>No matches.</p>
 
+  {% if subjects %}
+    <nav class="jump" aria-label="Jump to a subject">
+      <ul class="chips">
+        {% for subject in subjects %}
+          <li><a class="chip" href="#{{ subject.key }}">{{ subject.label }}</a></li>
+        {% endfor %}
+        <li><a class="chip" href="#topics-heading">Your topics</a></li>
+      </ul>
+    </nav>
+  {% endif %}
+
   <section class="vsection" aria-labelledby="syllabus-heading">
     <h2 class="overline" id="syllabus-heading">Your syllabus</h2>
     {% if subjects %}
       {% for subject in subjects %}
         <details class="subject" id="{{ subject.key }}" open>
-          <summary><span class="subject-name">{{ subject.label }}</span> <span class="muted small">{{ subject.chapters | length }} chapters</span></summary>
-          <div class="topic-list">
+          <summary><span class="subject-name">{{ subject.label }}</span> <span class="subject-count small">{{ subject.chapters | length }} chapters</span></summary>
+          <ol class="contents">
             {% for chapter in subject.chapters %}
-              <article class="card chapter-row" data-topic="{{ (chapter.name ~ ' ' ~ chapter.topics | join(' ')) | lower }}">
+              <li class="chapter-row" data-topic="{{ (chapter.name ~ ' ' ~ chapter.topics | join(' ')) | lower }}">
                 <div class="chapter-row-main">
                   <h3><a class="title-link" href="{{ url_for('topics.chapter', subject_key=subject.key, slug=chapter.slug) }}">{{ chapter.name }}</a></h3>
                   <p class="muted small">{{ chapter.topics | length }} topics · {{ chapter.done }} of {{ chapter.topics | length }} studied</p>
@@ -34,9 +46,9 @@
                     <button type="submit" class="btn btn-ghost btn-small" aria-label="Study this week: {{ chapter.name }}">Study this week</button>
                   </form>
                 {% endif %}
-              </article>
+              </li>
             {% endfor %}
-          </div>
+          </ol>
         </details>
       {% endfor %}
     {% else %}
@@ -52,9 +64,9 @@
           <div class="setting setting-static">
             <a class="interest-link" href="{{ url_for('topics.interest', key=key) }}">
               <span class="topic-icon">{{ icons.topic_icon(key, 18) }}</span>
-              <span>{{ label }}{% if following %}<span class="sr-only"> (following)</span>{% endif %}</span>
+              <span>{{ label }}{% if following %}<span class="interest-label">Following</span>{% endif %}</span>
             </a>
-            {{ follow_form(key, label, following, url_for('browse.index') ~ '#topics-heading') }}
+            {{ follow_form(key, label, following, url_for('browse.index') ~ '#topics-heading', quiet=True) }}
           </div>
         </li>
       {% endfor %}

@@ -169,6 +169,13 @@ TEXT_PAIRS = [
     ("text", "success-bg"), ("text", "danger-bg"), ("text", "notice-bg"),
     ("danger-ink", "danger"), ("danger", "surface"), ("danger", "danger-bg"),
     ("ok", "surface"), ("warn", "surface"), ("bad", "surface"), ("ok", "bg"), ("warn", "bg"), ("bad", "bg"),
+    ("ok-ink", "ok"), ("text-2", "notice-bg"), ("muted", "notice-bg"),
+]
+
+# Borders that mark an input or a stop on the week line, and the focus ring, need 3:1 (WCAG 1.4.11).
+NON_TEXT_PAIRS = [
+    ("border-strong", "bg"), ("border-strong", "surface"), ("focus", "bg"), ("focus", "surface"),
+    ("ok", "surface"), ("accent-text", "accent-soft"),
 ]
 
 
@@ -180,6 +187,18 @@ def test_text_colours_meet_wcag_aa(theme):
         f"{fg} on {bg}: {contrast(colours[fg], colours[bg]):.2f}"
         for fg, bg in TEXT_PAIRS
         if contrast(colours[fg], colours[bg]) < 4.5
+    ]
+    assert not failures, failures
+
+
+@pytest.mark.parametrize("theme", ("light", "dark"))
+def test_borders_and_focus_ring_meet_3_to_1(theme):
+    light = tokens("\n:root")
+    colours = light if theme == "light" else {**light, **tokens(':root[data-theme="dark"]')}
+    failures = [
+        f"{fg} on {bg}: {contrast(colours[fg], colours[bg]):.2f}"
+        for fg, bg in NON_TEXT_PAIRS
+        if contrast(colours[fg], colours[bg]) < 3
     ]
     assert not failures, failures
 

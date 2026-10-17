@@ -10,9 +10,9 @@
 <ol class="week" aria-label="This week's plan">
   {% for slot in card.plan %}
     {% set label = slot.topic if slot.kind == 'learn' else {'review': 'Chapter review', 'practice': 'Practice', 'rest': 'Rest'}[slot.kind] %}
-    <li class="week-step week-{{ slot.kind }}{% if slot.day < card.day %} is-past{% endif %}{% if slot.kind == 'learn' and slot.topic in card.studied_topics %} is-done{% endif %}"{% if slot.day == card.day %} aria-current="step"{% endif %} title="Day {{ slot.day }}: {{ label }}">
-      {% set done = slot.kind == 'learn' and slot.topic in card.studied_topics %}
-      <span aria-hidden="true">{% if done %}&#10003;{% elif slot.kind == 'learn' %}{{ slot.day }}{% elif slot.kind == 'review' %}R{% elif slot.kind == 'practice' %}P{% else %}&middot;{% endif %}</span>
+    {% set done = slot.kind == 'learn' and slot.topic in card.studied_topics %}
+    <li class="week-step week-{{ slot.kind }}{% if slot.day < card.day %} is-past{% endif %}{% if done %} is-done{% endif %}"{% if slot.day == card.day %} aria-current="step"{% endif %} title="Day {{ slot.day }}: {{ label }}">
+      <span class="stop" aria-hidden="true">{% if done %}{{ icons.icon('check', 14) }}{% elif slot.kind == 'learn' %}{{ slot.day }}{% elif slot.kind == 'review' %}R{% elif slot.kind == 'practice' %}P{% endif %}</span>
       <span class="sr-only">Day {{ slot.day }}: {{ label }}{% if done %} (studied){% endif %}{% if slot.day == card.day %} (today){% endif %}</span>
     </li>
   {% endfor %}
@@ -20,8 +20,8 @@
 {%- endmacro %}
 {% block content %}
   <header class="greeting">
-    <p class="muted" data-greeting>{{ greeting }},</p>
-    <h1>{{ g.user['username'] }}</h1>
+    <p class="overline">{{ today.strftime('%A') }} · {{ today.day }} {{ today.strftime('%B') }}</p>
+    <h1><span data-greeting>{{ greeting }}</span>, {{ g.user['username'] }}</h1>
     <p class="muted">Grade {{ prefs.grade }} · {{ goal_label }}</p>
   </header>
 
@@ -36,7 +36,6 @@
 
   <div class="section-head">
     <h2 class="overline">Today's focus</h2>
-    <span class="muted">{{ today.strftime('%d %b') }}</span>
   </div>
 
   {% if cards %}
@@ -47,6 +46,7 @@
           <div class="card-head">
             <span class="tile">{{ icons.subject_icon(card.subject, 22) }}</span>
             <div class="card-title">
+              <p class="card-kicker">{{ card.subject }} · Day {{ card.day }} of 7</p>
               {% if card.kind == 'learn' %}
                 <h3><a class="title-link" href="{{ chapter_url }}#{{ card.topic | slug }}">{{ card.topic }}</a></h3>
               {% elif card.kind == 'review' %}
@@ -56,9 +56,8 @@
               {% else %}
                 <h3>Rest day</h3>
               {% endif %}
-              <p class="muted">{{ card.subject }} · <a class="title-link" href="{{ chapter_url }}">{{ card.chapter }}</a></p>
+              <p class="muted small"><a class="title-link" href="{{ chapter_url }}">{{ card.chapter }}</a></p>
             </div>
-            <span class="card-day">Day {{ card.day }} of 7</span>
           </div>
           {{ week_strip(card) }}
           {% if card.kind == 'learn' %}
@@ -70,7 +69,7 @@
             </ul>
             {{ mark_form(card.topic_key, card.topic, card.studied, '/#card-' ~ card.subject_key, today) }}
           {% elif card.kind == 'review' %}
-            <p class="summary">Close the book. {{ card.prompt }}</p>
+            <p class="summary prompt">Close the book. {{ card.prompt }}</p>
             <ul class="review-list">
               {% for t in card.topics %}
                 <li><a class="link" href="{{ chapter_url }}#{{ t | slug }}">{{ t }}</a></li>
@@ -99,7 +98,7 @@
     </div>
     {% if finished %}
       <section class="finish" aria-label="Done for today">
-        <span class="finish-art">{{ icons.icon('check-circle', 28) }}</span>
+        <span class="finish-art">{{ icons.icon('check-circle', 26) }}</span>
         <div>
           <h2>That's everything for today.</h2>
           <p class="muted">See you tomorrow. <a class="link" href="{{ url_for('study.progress') }}">See your progress</a></p>
@@ -129,11 +128,12 @@
       <div class="cards">
         {% for item in revise %}
           <article class="card">
-            <div>
+            <div class="card-top">
+              <p class="card-kicker">{{ item.subject }} · Recall</p>
               <h3>{{ item.topic }}</h3>
-              <p class="muted"><a class="title-link" href="{{ url_for('topics.chapter', subject_key=item.subject_key, slug=item.chapter_slug) }}#{{ item.anchor }}">{{ item.subject }} · {{ item.chapter }}</a></p>
+              <p class="muted small"><a class="title-link" href="{{ url_for('topics.chapter', subject_key=item.subject_key, slug=item.chapter_slug) }}#{{ item.anchor }}">{{ item.chapter }}</a></p>
             </div>
-            <p class="summary">{{ item.prompt }}</p>
+            <p class="summary prompt">{{ item.prompt }}</p>
             <details>
               <summary>Show summary</summary>
               <p class="summary">{{ item.info.summary if item.info else 'No saved summary. Check the chapter page.' }}</p>
@@ -164,9 +164,9 @@
         <article class="card">
           <div class="card-head">
             <span class="tile">{{ icons.topic_icon(pick.key, 22) }}</span>
-            <div>
+            <div class="card-title">
+              <p class="card-kicker">{{ pick.label }}</p>
               <h3><a class="title-link" href="{{ topic_url }}">{{ pick.name }}</a></h3>
-              <p class="muted">{{ pick.label }}</p>
             </div>
           </div>
           {% if pick.info %}
