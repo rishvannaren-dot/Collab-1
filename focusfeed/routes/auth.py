@@ -83,9 +83,11 @@ def register():
             error = f"Username {username} is already taken."
 
         if error is None:
+            now = int(time.time())
             cursor = db.execute(
-                "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-                (username, generate_password_hash(password)),
+                "INSERT INTO users (username, password_hash, created_at, consent_at, consent_version) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (username, generate_password_hash(password), now, now, account.PRIVACY_VERSION),
             )
             db.commit()
             sign_in(cursor.lastrowid, 0)

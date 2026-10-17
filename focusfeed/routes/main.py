@@ -2,7 +2,7 @@ from flask import Blueprint, g, redirect, render_template, url_for
 
 from ..db import get_db
 from ..services import cards as cards_service
-from ..services import explore, preferences, recovery, topic_info
+from ..services import account, explore, preferences, recovery, topic_info
 from . import helpers
 from .auth import login_required
 from .topics import attach_info
@@ -57,4 +57,4 @@ def index():
 
 @bp.route("/privacy")
 def privacy():
-    return render_template("privacy.html")
+    return render_template("privacy.html", privacy_version=account.PRIVACY_VERSION)

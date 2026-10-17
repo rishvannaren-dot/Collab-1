@@ -65,6 +65,8 @@ The list ships empty on purpose: add only videos someone on the team has watched
 - Sign-up asks for a nickname (3-30 letters, numbers, `.`, `_` or `-`); "Alice" and "alice" are the same account.
 - Straight after sign-up the student can make a **recovery key** (like `ABCD-EFGH-JKLM-NPQR`). With it, "Forgot password?" on the sign-in page sets a new password. There is no email, on purpose. Each key works once; only its hash is stored.
 - The Account page (`/account`) has Change password, a new recovery key, and "Sign out of all other devices".
+- It also has **Download my data** (a JSON file) and **Delete my account** (password plus typed username; deletes every row about the student at once). Sign-up stores when the student agreed to the privacy notes and which version (`PRIVACY_VERSION` in `services/account.py`).
+- Any new table with a `user_id` column must be added to `USER_TABLES` in `services/account.py`, or a test fails. That keeps download and delete complete.
 
 ## For the team
 
@@ -73,6 +75,8 @@ Run these in the project folder with the virtual environment active:
 ```bash
 flask --app run users set-password USERNAME   # a student lost their password and key
 flask --app run users unlock USERNAME         # clear the 15-minute sign-in lock
+flask --app run users export USERNAME -o x.json  # a guardian asks for the data
+flask --app run users delete USERNAME         # a guardian asks for deletion (asks to confirm)
 flask --app run backup                        # dated copy in instance/backups, keeps 7
 ```
 

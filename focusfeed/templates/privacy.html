@@ -13,6 +13,7 @@
     <ul>
       <li>Your username and a hashed password (we never store the password itself).</li>
       <li>A hashed recovery key, if you make one (we never store the key itself).</li>
+      <li>When you made your account, and when you agreed to these notes (and which version).</li>
       <li>Your interests, grade, and goal, so we can build your study cards and videos.</li>
       <li>
         Failed sign-in attempts (the username and the time), to stop password guessing.
@@ -58,11 +59,29 @@
       <li>We don't show ads, use analytics, or sell or share your data.</li>
     </ul>
 
+    <h2>Download or delete your data</h2>
+    <ul>
+      <li>On your Account page, <strong>Download my data</strong> gives you everything stored about you as a file.</li>
+      <li>
+        <strong>Delete my account</strong>, on the same page, removes your account and
+        everything stored about you straight away.
+      </li>
+    </ul>
+
+    <h2>How long we keep things</h2>
+    <ul>
+      <li>Failed sign-in attempts: 15 minutes.</li>
+      <li>Your account and what you've saved: until you delete them.</li>
+      <li>Backups made by the team are kept for 7 days, so a deleted account is gone from them within a week.</li>
+    </ul>
+
     <h2>Under 18</h2>
     <p>
       If you are under 18, a parent or guardian must agree before you create an account.
-      You or they can ask the Focus Feed team to delete your account and everything
-      stored about you at any time.
+      You can delete your account yourself at any time. A parent or guardian who doesn't
+      have your password can ask the Focus Feed team to delete it.
     </p>
+
+    <p class="muted small">Version {{ privacy_version }}</p>
   </section>
 {% endblock %}

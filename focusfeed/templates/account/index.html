@@ -27,5 +27,24 @@
         </form>
       </li>
     </ul>
+
+    <h2 class="overline">Your data</h2>
+    <ul class="settings">
+      <li>
+        <div class="setting setting-static">
+          <span>Joined</span>
+          <span class="muted">{{ (g.user['created_at'] | date) or 'Before October 2026' }}</span>
+        </div>
+      </li>
+      <li>
+        <div class="setting setting-static">
+          <span>Privacy notes agreed</span>
+          <span class="muted">{% if g.user['consent_version'] %}Version {{ g.user['consent_version'] }}, {{ g.user['consent_at'] | date }}{% else %}Not recorded{% endif %}</span>
+        </div>
+      </li>
+      <li><a class="setting" href="{{ url_for('account.export') }}" download><span>Download my data</span>{{ icons.icon('chevron', 16) }}</a></li>
+      <li><a class="setting" href="{{ url_for('main.privacy') }}"><span>Privacy notes <span class="muted small setting-note">version {{ privacy_version }}</span></span>{{ icons.icon('chevron', 16) }}</a></li>
+      <li><a class="setting setting-danger" href="{{ url_for('account.delete') }}"><span>Delete my account</span>{{ icons.icon('chevron', 16) }}</a></li>
+    </ul>
   </section>
 {% endblock %}

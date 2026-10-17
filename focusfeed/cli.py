@@ -1,6 +1,8 @@
 """Command-line tools for the team, run with `flask --app run <command>`."""
 
+import json
 import os
+import time
 import sqlite3
 from pathlib import Path
 
@@ -89,6 +91,37 @@ def unlock_command(username):
     user = find_or_fail(db, username)
     unlock(db, user["username"])
     click.echo(f"Unlocked {user['username']}.")
+
+
+@users_group.command("delete")
+@click.argument("username")
+@click.option("--yes", is_flag=True, help="Don't ask for confirmation.")
+@with_appcontext
+def delete_command(username, yes):
+    """Delete an account and everything stored about it (for a guardian's request)."""
+    db = get_db()
+    user = find_or_fail(db, username)
+    if not yes:
+        click.confirm(f"Delete {user['username']} and all their data? This can't be undone", abort=True)
+    account.delete_user(db, user["id"])
+    click.echo(f"Deleted {user['username']}.")
+
+
+@users_group.command("export")
+@click.argument("username")
+@click.option("-o", "--output", type=click.Path(dir_okay=False, writable=True), help="File to write (default: print it).")
+@with_appcontext
+def export_command(username, output):
+    """Write everything stored about an account as JSON."""
+    db = get_db()
+    user = find_or_fail(db, username)
+    text = json.dumps(account.export_user(db, user["id"], time.time()), indent=2, ensure_ascii=False)
+    if output:
+        with open(output, "w", encoding="utf-8") as f:
+            f.write(text + "\n")
+        click.echo(f"Wrote {output}")
+    else:
+        click.echo(text)
 
 
 def init_app(app):

@@ -17,6 +17,14 @@ MIGRATIONS = [
             " created_at INTEGER NOT NULL)",
         ],
     ),
+    (
+        2,  # when the account was made and which privacy notes were agreed to
+        [
+            "ALTER TABLE users ADD COLUMN created_at INTEGER",
+            "ALTER TABLE users ADD COLUMN consent_at INTEGER",
+            "ALTER TABLE users ADD COLUMN consent_version TEXT",
+        ],
+    ),
 ]
 
 

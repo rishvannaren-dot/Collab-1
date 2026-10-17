@@ -1,6 +1,17 @@
+import json
 import time
 
-from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
+from flask import (
+    Blueprint,
+    Response,
+    flash,
+    g,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 
 from ..db import get_db
 from ..services import account, login_limits, preferences, recovery
@@ -36,6 +47,7 @@ def index():
         goal_label=preferences.GOALS.get(prefs["goal"], "") if prefs else "",
         interests=preferences.INTERESTS,
         key_created_at=recovery.key_created_at(db, g.user["id"]),
+        privacy_version=account.PRIVACY_VERSION,
     )
 
 
@@ -85,3 +97,33 @@ def sign_out_everywhere():
     session["sv"] = account.bump_session(get_db(), g.user["id"])
     flash("Signed out of every other device.", "success")
     return redirect(url_for("account.index"))
+
+
+@bp.route("/export")
+@login_required
+def export():
+    data = account.export_user(get_db(), g.user["id"], time.time())
+    return Response(
+        json.dumps(data, indent=2, ensure_ascii=False),
+        mimetype="application/json",
+        headers={
+            "Content-Disposition": "attachment; filename=focusfeed-my-data.json",
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+@bp.route("/delete", methods=("GET", "POST"))
+@login_required
+def delete():
+    if request.method == "POST":
+        db = get_db()
+        typed = request.form.get("confirm_username", "").strip()
+        if typed.lower() != g.user["username"].lower():
+            flash("Type your username exactly to confirm.", "error")
+        elif password_ok(db, request.form.get("current", "")):
+            account.delete_user(db, g.user["id"])
+            session.clear()
+            flash("Your account and everything stored about it were deleted.", "success")
+            return redirect(url_for("main.welcome"))
+    return render_template("account/delete.html")

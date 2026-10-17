@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_forms.html" import password_field %}
+{% block title %}Delete account{% endblock %}
+{% block content %}
+  <section class="narrow">
+    <h1>Delete your account</h1>
+    <div class="danger-zone">
+      <p><strong>This can't be undone.</strong> Deleting removes:</p>
+      <ul>
+        <li>your account, username and password</li>
+        <li>your interests, grade and goal</li>
+        <li>your recovery key</li>
+        <li>your study plan, the topics you marked as studied and your revision dates</li>
+      </ul>
+      <p class="muted small">Want a copy first? <a class="link" href="{{ url_for('account.export') }}">Download your data</a>.</p>
+    </div>
+    <form method="post" class="stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="confirm_username">Type your username, <strong>{{ g.user['username'] }}</strong>, to confirm</label>
+      <input name="confirm_username" id="confirm_username" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="30" required>
+      {{ password_field('current', 'current', 'Your password', 'current-password') }}
+      <button type="submit" class="btn btn-danger">Delete my account</button>
+    </form>
+    <p class="muted center"><a class="link" href="{{ url_for('account.index') }}">Keep my account</a></p>
+  </section>
+{% endblock %}

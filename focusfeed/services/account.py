@@ -1,6 +1,8 @@
-"""Account rules and changes: nicknames, passwords, signing out other devices."""
+"""Account rules and changes: nicknames, passwords, signing out other devices,
+and a student's own data (download and delete)."""
 
 import re
+from datetime import datetime, timezone
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -9,6 +11,15 @@ MIN_PASSWORD_LENGTH = 8
 MAX_PASSWORD_LENGTH = 128  # long enough for any passphrase, short enough to hash cheaply
 
 _DUMMY_HASH = generate_password_hash("not-a-real-password")
+
+# Shown on the privacy page and stored with each sign-up. Change it when the
+# privacy notes change in a way people should agree to again.
+PRIVACY_VERSION = "2026-10"
+
+# Every table with a user_id column. Download and delete both use this list,
+# and a test fails if a new table with user_id is missing from it.
+USER_TABLES = ["preferences", "recovery_keys"]
+SECRET_COLUMNS = {"password_hash", "key_hash"}
 
 
 def username_error(name):
@@ -66,3 +77,62 @@ def set_password(db, user_id, password):
         (generate_password_hash(password), user_id),
     )
     return bump_session(db, user_id)
+
+
+def iso(timestamp):
+    if timestamp is None:
+        return None
+    return datetime.fromtimestamp(timestamp, timezone.utc).isoformat(timespec="seconds")
+
+
+def export_user(db, user_id, now):
+    """Everything stored about one user, as plain data (no password or key hashes)."""
+    user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    data = {
+        "app": "Focus Feed",
+        "exported_at": iso(now),
+        "privacy_version": PRIVACY_VERSION,
+        "account": {
+            "username": user["username"],
+            "created_at": iso(user["created_at"]),
+            "consent_at": iso(user["consent_at"]),
+            "consent_version": user["consent_version"],
+        },
+    }
+    for table in USER_TABLES:
+        rows = db.execute(f"SELECT * FROM {table} WHERE user_id = ?", (user_id,)).fetchall()
+        data[table] = [
+            {k: row[k] for k in row.keys() if k != "user_id" and k not in SECRET_COLUMNS}
+            for row in rows
+        ]
+
+    # Friendlier shapes for the two tables people will read first.
+    prefs = data["preferences"][0] if data["preferences"] else None
+    data["preferences"] = prefs and {
+        "interests": [i for i in prefs["interests"].split(",") if i],
+        "grade": prefs["grade"],
+        "goal": prefs["goal"],
+    }
+    keys = data.pop("recovery_keys")
+    data["recovery_key"] = {
+        "set": bool(keys),
+        "created_at": iso(keys[0]["created_at"]) if keys else None,
+    }
+    return data
+
+
+def delete_user(db, user_id):
+    """Delete the user and everything stored about them, in one transaction."""
+    row = db.execute("SELECT username FROM users WHERE id = ?", (user_id,)).fetchone()
+    if row is None:
+        return
+    name = row["username"].lower()
+    try:
+        for table in USER_TABLES:  # rows that point at the user go first
+            db.execute(f"DELETE FROM {table} WHERE user_id = ?", (user_id,))
+        db.execute("DELETE FROM login_failures WHERE username IN (?, ?)", (name, "reset:" + name))
+        db.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
