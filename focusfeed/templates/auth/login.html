@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+  <section class="auth">
+    <a class="back" href="{{ url_for('main.welcome') }}" aria-label="Back">{{ icons.icon('arrow-left') }}</a>
+    <h1>Welcome back</h1>
+    <p class="muted">Sign in to continue to Focus Feed.</p>
+    <form method="post" class="stack">
+      <label for="username">Username</label>
+      <input name="username" id="username" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input type="password" name="password" id="password" autocomplete="current-password" required>
+      <button type="submit" class="btn btn-primary">Sign in</button>
+    </form>
+    <p class="muted center">Don't have an account? <a class="link" href="{{ url_for('auth.register') }}">Sign up</a></p>
+  </section>
+{% endblock %}

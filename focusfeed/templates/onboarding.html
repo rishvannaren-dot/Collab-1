@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Choose your topics{% endblock %}
+{% block content %}
+  <section class="narrow">
+    <h1>Choose your topics</h1>
+    <p class="muted">Pick what you want to follow. You can always change this later.</p>
+
+    <form method="post" class="stack">
+      <div class="search">
+        {{ icons.icon('search', 18) }}
+        <input type="search" placeholder="Search topics" aria-label="Search topics" data-topic-search>
+      </div>
+
+      <fieldset class="topics">
+        <legend class="sr-only">Interests</legend>
+        {% for key, label in interests.items() %}
+          <label class="topic" data-topic="{{ label | lower }}">
+            <input type="checkbox" name="interests" value="{{ key }}" {% if key in current.interests %}checked{% endif %}>
+            <span class="topic-icon">{{ icons.topic_icon(key, 18) }}</span>
+            <span class="topic-name">{{ label }}</span>
+            <span class="topic-check">{{ icons.icon('check', 14) }}</span>
+          </label>
+        {% endfor %}
+      </fieldset>
+
+      <div class="pair">
+        <div class="stack">
+          <label for="grade">Grade</label>
+          <select name="grade" id="grade" required>
+            <option value="" disabled {% if not current.grade %}selected{% endif %}>Select grade</option>
+            {% for g_ in grades %}
+              <option value="{{ g_ }}" {% if current.grade|string == g_|string %}selected{% endif %}>Grade {{ g_ }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="stack">
+          <label for="goal">Goal</label>
+          <select name="goal" id="goal" required>
+            <option value="" disabled {% if not current.goal %}selected{% endif %}>Select goal</option>
+            {% for key, label in goals.items() %}
+              <option value="{{ key }}" {% if current.goal == key %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Continue</button>
+    </form>
+  </section>
+{% endblock %}

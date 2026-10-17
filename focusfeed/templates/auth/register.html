@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Sign up{% endblock %}
+{% block content %}
+  <section class="auth">
+    <a class="back" href="{{ url_for('main.welcome') }}" aria-label="Back">{{ icons.icon('arrow-left') }}</a>
+    <h1>Create your account</h1>
+    <p class="muted">Takes a minute. You choose what you see next.</p>
+    <form method="post" class="stack">
+      <label for="username">Username</label>
+      <input name="username" id="username" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input type="password" name="password" id="password" autocomplete="new-password" minlength="8" required>
+      <label class="consent">
+        <input type="checkbox" name="consent" required>
+        <span>I'm 18 or older, or a parent or guardian has agreed. See the
+        <a class="link" href="{{ url_for('main.privacy') }}">privacy notes</a>.</span>
+      </label>
+      <button type="submit" class="btn btn-primary">Sign up</button>
+    </form>
+    <p class="muted center">Already have an account? <a class="link" href="{{ url_for('auth.login') }}">Sign in</a></p>
+  </section>
+{% endblock %}

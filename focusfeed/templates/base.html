@@ -1,0 +1,83 @@
+{% import "_icons.html" as icons %}
+{% macro theme_toggle() -%}
+<button type="button" class="icon-btn" data-theme-toggle aria-label="Switch between light and dark mode">
+  <span class="icon-moon">{{ icons.icon('moon') }}</span>
+  <span class="icon-sun">{{ icons.icon('sun') }}</span>
+</button>
+{%- endmacro %}
+{% macro logout_button() -%}
+<form action="{{ url_for('auth.logout') }}" method="post" class="inline-form">
+  <button type="submit" class="icon-btn" aria-label="Log out">{{ icons.icon('log-out') }}</button>
+</form>
+{%- endmacro %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block title %}{% endblock %} - Focus Feed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap">
+  <script>try{var t=localStorage.getItem('theme');if(t){document.documentElement.setAttribute('data-theme',t)}}catch(e){}</script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell{% if g.user %} has-nav{% endif %}">
+
+  {% if g.user %}
+  <aside class="sidebar">
+    <a class="brand" href="{{ url_for('main.index') }}"><span class="brand-mark"></span>Focus Feed</a>
+    <nav aria-label="Main" class="side-nav">
+      <a class="nav-link{% if request.endpoint == 'main.index' %} active{% endif %}" href="{{ url_for('main.index') }}">{{ icons.icon('home') }}Today</a>
+      <a class="nav-link{% if request.endpoint == 'videos.index' %} active{% endif %}" href="{{ url_for('videos.index') }}">{{ icons.icon('play') }}Videos</a>
+      <a class="nav-link{% if request.endpoint == 'onboarding.onboarding' %} active{% endif %}" href="{{ url_for('onboarding.onboarding') }}">{{ icons.icon('sliders') }}Preferences</a>
+    </nav>
+    <div class="followed">
+      <h2 class="overline">Followed topics</h2>
+      <ul>
+        {% for topic in followed %}
+          <li>{{ icons.topic_icon(topic.key, 18) }}<span>{{ topic.label }}</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="side-foot">
+      <span class="user-name">{{ g.user['username'] }}</span>
+      <span class="side-actions">{{ theme_toggle() }}{{ logout_button() }}</span>
+    </div>
+  </aside>
+  {% endif %}
+
+  <div class="content">
+    <header class="topbar">
+      {% if g.user %}
+        <a class="brand" href="{{ url_for('main.index') }}"><span class="brand-mark"></span>Focus Feed</a>
+      {% else %}
+        <span></span>
+      {% endif %}
+      <span class="top-actions">{{ theme_toggle() }}{% if g.user %}{{ logout_button() }}{% endif %}</span>
+    </header>
+
+    <main id="main">
+      {% for message in get_flashed_messages() %}
+        <p class="flash" role="alert">{{ message }}</p>
+      {% endfor %}
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer><a href="{{ url_for('main.privacy') }}">Privacy</a></footer>
+  </div>
+
+  {% if g.user %}
+  <nav class="tabbar" aria-label="Primary">
+    <a class="tab{% if request.endpoint == 'main.index' %} active{% endif %}" href="{{ url_for('main.index') }}">{{ icons.icon('home', 22) }}<span>Today</span></a>
+    <a class="tab{% if request.endpoint == 'videos.index' %} active{% endif %}" href="{{ url_for('videos.index') }}">{{ icons.icon('play', 22) }}<span>Videos</span></a>
+    <a class="tab{% if request.endpoint == 'onboarding.onboarding' %} active{% endif %}" href="{{ url_for('onboarding.onboarding') }}">{{ icons.icon('sliders', 22) }}<span>Preferences</span></a>
+  </nav>
+  {% endif %}
+</div>
+</body>
+</html>

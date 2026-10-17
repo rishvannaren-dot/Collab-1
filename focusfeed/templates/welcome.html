@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+  <section class="splash">
+    <h1 class="display">Focus<br>Feed</h1>
+    <p class="lead">Only what you follow.<br>No more. No less.</p>
+    <svg class="splash-art" viewBox="0 0 160 120" aria-hidden="true">
+      <circle cx="80" cy="46" r="34" fill="var(--accent)"/>
+      <path d="M12 120a68 52 0 0 1 136 0z" fill="var(--accent-soft)"/>
+    </svg>
+    <div class="splash-actions">
+      <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Get started</a>
+      <a class="link" href="{{ url_for('auth.login') }}">I already have an account</a>
+    </div>
+  </section>
+{% endblock %}

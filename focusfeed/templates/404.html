@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Not found{% endblock %}
+{% block content %}
+  <div class="empty">
+    <span class="empty-art">{{ icons.icon('sprout', 40) }}</span>
+    <h1>Page not found</h1>
+    <p class="muted">That page doesn't exist.</p>
+    <a class="btn btn-primary" href="{{ url_for('main.index') }}">Back to your feed</a>
+  </div>
+{% endblock %}

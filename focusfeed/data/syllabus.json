@@ -1,0 +1,59 @@
+{
+  "subjects": {
+    "physics": {
+      "label": "Physics",
+      "chapters": [
+        {"name": "Units and Measurements", "grade": 11, "topics": ["SI units and dimensions", "Significant figures", "Errors in measurement", "Dimensional analysis"]},
+        {"name": "Kinematics", "grade": 11, "topics": ["Motion in a straight line", "Relative velocity", "Projectile motion", "Circular motion"]},
+        {"name": "Laws of Motion", "grade": 11, "topics": ["Newton's three laws", "Friction", "Free-body diagrams", "Circular dynamics"]},
+        {"name": "Work, Energy and Power", "grade": 11, "topics": ["Work-energy theorem", "Conservative forces", "Potential energy", "Collisions"]},
+        {"name": "Thermodynamics", "grade": 11, "topics": ["Zeroth and first law", "Thermodynamic processes", "Second law and entropy", "Heat engines"]},
+        {"name": "Electrostatics", "grade": 12, "topics": ["Coulomb's law", "Electric field and field lines", "Gauss's law", "Electric potential", "Capacitors and capacitance"]},
+        {"name": "Current Electricity", "grade": 12, "topics": ["Ohm's law and resistivity", "Kirchhoff's laws", "Wheatstone bridge", "Potentiometer"]},
+        {"name": "Magnetic Effects of Current", "grade": 12, "topics": ["Biot-Savart law", "Ampere's law", "Force on a moving charge", "Moving coil galvanometer"]},
+        {"name": "Electromagnetic Induction", "grade": 12, "topics": ["Faraday's law", "Lenz's law", "Self and mutual inductance", "AC circuits"]},
+        {"name": "Ray Optics", "grade": 12, "topics": ["Reflection and mirrors", "Refraction and lenses", "Total internal reflection", "Optical instruments"]},
+        {"name": "Wave Optics", "grade": 12, "topics": ["Huygens' principle", "Interference", "Diffraction", "Polarisation"]}
+      ]
+    },
+    "chemistry": {
+      "label": "Chemistry",
+      "chapters": [
+        {"name": "Some Basic Concepts of Chemistry", "grade": 11, "topics": ["The mole concept", "Stoichiometry", "Limiting reagent", "Concentration terms"]},
+        {"name": "Structure of Atom", "grade": 11, "topics": ["Bohr model", "Quantum numbers", "Electronic configuration", "Atomic orbitals"]},
+        {"name": "Chemical Bonding and Molecular Structure", "grade": 11, "topics": ["Ionic and covalent bonds", "VSEPR theory", "Hybridisation", "Molecular orbital theory"]},
+        {"name": "Thermodynamics", "grade": 11, "topics": ["Enthalpy", "Hess's law", "Entropy", "Gibbs energy"]},
+        {"name": "Solutions", "grade": 12, "topics": ["Raoult's law", "Colligative properties", "Osmotic pressure", "Van't Hoff factor"]},
+        {"name": "Electrochemistry", "grade": 12, "topics": ["Galvanic cells", "Nernst equation", "Conductance", "Electrolysis and Faraday's laws"]},
+        {"name": "Chemical Kinetics", "grade": 12, "topics": ["Rate of reaction", "Order and molecularity", "Integrated rate laws", "Arrhenius equation"]},
+        {"name": "Coordination Compounds", "grade": 12, "topics": ["Werner's theory", "Nomenclature", "Crystal field theory", "Isomerism"]},
+        {"name": "Haloalkanes and Haloarenes", "grade": 12, "topics": ["SN1 and SN2 mechanisms", "Elimination reactions", "Preparation methods", "Reactions of haloarenes"]}
+      ]
+    },
+    "maths": {
+      "label": "Maths",
+      "chapters": [
+        {"name": "Sets and Functions", "grade": 11, "topics": ["Set operations", "Relations", "Types of functions", "Domain and range"]},
+        {"name": "Trigonometric Functions", "grade": 11, "topics": ["Radian measure", "Identities", "Trigonometric equations", "Inverse functions"]},
+        {"name": "Permutations and Combinations", "grade": 11, "topics": ["Fundamental principle of counting", "Permutations", "Combinations", "Arrangements with repetition"]},
+        {"name": "Straight Lines", "grade": 11, "topics": ["Slope and equations of a line", "Angle between lines", "Distance from a point", "Family of lines"]},
+        {"name": "Matrices and Determinants", "grade": 12, "topics": ["Matrix operations", "Determinant properties", "Inverse of a matrix", "Solving linear systems"]},
+        {"name": "Continuity and Differentiability", "grade": 12, "topics": ["Limits and continuity", "Chain rule", "Implicit differentiation", "Mean value theorems"]},
+        {"name": "Integrals", "grade": 12, "topics": ["Indefinite integrals", "Substitution", "Integration by parts", "Definite integrals"]},
+        {"name": "Application of Derivatives", "grade": 12, "topics": ["Rate of change", "Increasing and decreasing functions", "Maxima and minima", "Tangents and normals"]},
+        {"name": "Probability", "grade": 12, "topics": ["Conditional probability", "Bayes' theorem", "Random variables", "Binomial distribution"]}
+      ]
+    },
+    "biology": {
+      "label": "Biology",
+      "chapters": [
+        {"name": "Cell: The Unit of Life", "grade": 11, "topics": ["Cell theory", "Cell organelles", "Prokaryotic vs eukaryotic cells", "Cell membrane"]},
+        {"name": "Biomolecules", "grade": 11, "topics": ["Carbohydrates", "Proteins and amino acids", "Lipids", "Enzymes"]},
+        {"name": "Photosynthesis in Higher Plants", "grade": 11, "topics": ["Light reactions", "Calvin cycle", "C4 pathway", "Factors affecting photosynthesis"]},
+        {"name": "Sexual Reproduction in Flowering Plants", "grade": 12, "topics": ["Flower structure", "Pollination", "Double fertilisation", "Seed and fruit formation"]},
+        {"name": "Principles of Inheritance and Variation", "grade": 12, "topics": ["Mendel's laws", "Incomplete dominance", "Linkage and crossing over", "Sex determination"]},
+        {"name": "Molecular Basis of Inheritance", "grade": 12, "topics": ["DNA structure", "Replication", "Transcription", "Translation and the genetic code"]}
+      ]
+    }
+  }
+}

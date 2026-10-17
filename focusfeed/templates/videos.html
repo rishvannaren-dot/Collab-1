@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Videos{% endblock %}
+{% block content %}
+  <header class="greeting">
+    <h1>Videos</h1>
+    <p class="muted">Picked for what you follow.</p>
+  </header>
+
+  {% for notice in notices %}
+    <p class="notice">{{ notice }}</p>
+  {% endfor %}
+
+  {% for section in sections %}
+    <section class="vsection" id="{{ section.tag | replace(' ', '-') }}">
+      <h2 class="overline">{{ section.title }}</h2>
+      {% if section.videos %}
+        <div class="videos">
+          {% for v in section.videos %}
+            <a class="video" href="https://www.youtube.com/watch?v={{ v.id }}" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.ytimg.com/vi/{{ v.id }}/mqdefault.jpg" alt="" loading="lazy">
+              <span class="video-text">
+                <strong>{{ v.title }}</strong>
+                <span class="muted small">{{ v.channel }}{% if v.seconds %} · {{ format_duration(v.seconds) }}{% endif %}</span>
+              </span>
+              {{ icons.icon('chevron', 16) }}
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="muted">No saved videos for this yet.</p>
+      {% endif %}
+      <a class="row-link" href="{{ section.link }}" target="_blank" rel="noopener noreferrer">Search YouTube for this topic {{ icons.icon('chevron', 16) }}</a>
+    </section>
+  {% else %}
+    <div class="empty">
+      <span class="empty-art">{{ icons.icon('sprout', 40) }}</span>
+      <h2>You are caught up</h2>
+      <p class="muted">Follow a few topics and videos will show up here.</p>
+      <a class="btn btn-primary" href="{{ url_for('onboarding.onboarding') }}">Explore topics</a>
+    </div>
+  {% endfor %}
+{% endblock %}

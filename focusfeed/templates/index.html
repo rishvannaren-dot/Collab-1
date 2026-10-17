@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Today{% endblock %}
+{% block content %}
+  <header class="greeting">
+    <p class="muted">{{ greeting }},</p>
+    <h1>{{ g.user['username'] }}</h1>
+    <p class="muted">Grade {{ prefs.grade }} · {{ goal_label }}</p>
+  </header>
+
+  <div class="section-head">
+    <h2 class="overline">Today's focus</h2>
+    <span class="muted">{{ today.strftime('%d %b') }}</span>
+  </div>
+
+  {% if cards %}
+    <div class="cards">
+      {% for card in cards %}
+        <article class="card" style="--i: {{ loop.index0 }}">
+          <div class="card-head">
+            <span class="tile">{{ icons.subject_icon(card.subject, 22) }}</span>
+            <div>
+              <h3>{{ card.topic }}</h3>
+              <p class="muted">{{ card.subject }} · {{ card.chapter }}</p>
+            </div>
+          </div>
+          <ul class="chips" aria-label="Topics this week">
+            {% for t in card.topics %}
+              <li class="chip{% if t == card.topic %} chip-on{% endif %}">{{ t }}</li>
+            {% endfor %}
+          </ul>
+          {% if card.revise %}<p class="muted small">Revise: {{ card.revise }}</p>{% endif %}
+          <a class="row-link" href="{{ url_for('videos.index') }}#{{ card.chapter | lower | replace(' ', '-') }}">Watch videos {{ icons.icon('chevron', 16) }}</a>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      <span class="empty-art">{{ icons.icon('sprout', 40) }}</span>
+      <h2>Nothing scheduled</h2>
+      <p class="muted">
+        Study cards are built for JEE, NEET, or Board goals in grades 11 and 12.
+        Your interests still shape the videos page.
+      </p>
+      <div class="empty-actions">
+        <a class="btn btn-primary" href="{{ url_for('videos.index') }}">Open videos</a>
+        <a class="btn btn-ghost" href="{{ url_for('onboarding.onboarding') }}">Change preferences</a>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
